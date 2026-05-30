@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  structure-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Sprint 0 structure
+        run: |
+          test -d backend
+          test -d frontend
+          test -d infra/nginx
+          test -d terraform
+          test -d scripts
+          test -d docs
+          test -f README.md
+          test -f .env.example
+          test -f .gitignore
+          test -f docker-compose.yml
+          test -f docs/arquitectura.md
+          test -f docs/decisiones-tecnicas.md
+          test -f docs/despliegue-vps.md
+          test -f docs/backup-continuidad.md
+          test -f terraform/main.tf
+          test -f terraform/variables.tf
+          test -f terraform/outputs.tf
+          test -f terraform/terraform.tfvars.example

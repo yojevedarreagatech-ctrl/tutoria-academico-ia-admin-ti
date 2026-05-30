@@ -1,0 +1,6 @@
+project_name = "tutoria-academico-ia-admin-ti"
+project_path = "/srv/tutoria-academico"
+ssh_user     = "deploy"
+vps_ip       = "203.0.113.10"
+app_port     = 8088
+backup_path  = "/srv/tutoria-academico/backups"
