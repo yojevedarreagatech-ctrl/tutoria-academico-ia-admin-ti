@@ -13,7 +13,7 @@ Construir una aplicacion web de tutoria academica preparada para integrar, en sp
 
 ## Estado actual
 
-Sprint 1 deja operativo el backend base con Django REST Framework y PostgreSQL, manteniendo fuera por ahora la logica avanzada de IA, RAG, embeddings, LangChain, LangGraph, STT, quizzes con IA y autenticacion compleja.
+Sprint 2 deja operativo un frontend base en Next.js con App Router, TypeScript y Tailwind CSS, conectado al backend Django REST para consultar el estado de salud del sistema.
 
 ## Stack propuesto
 
@@ -82,6 +82,16 @@ El backend incluye:
 - Endpoint de salud en `/api/health/`
 - Endpoints REST base para materiales, conversaciones, mensajes y quizzes
 
+## Frontend Sprint 2
+
+El frontend incluye:
+
+- Next.js con App Router y TypeScript
+- Tailwind CSS para layout y componentes base
+- Dashboard conectado a `GET /api/health/`
+- Navegacion a `Dashboard`, `Materiales`, `Chat Tutor`, `Quizzes` y `Admin Tecnico`
+- Vistas placeholder listas para integracion posterior con endpoints reales
+
 ## Comandos para desarrollo local
 
 ```bash
@@ -97,6 +107,33 @@ Prueba basica esperada:
 GET http://localhost:8000/api/health/
 ```
 
+## Levantar frontend con npm local
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend esperado:
+
+```bash
+http://localhost:3000
+```
+
+## Levantar frontend con Docker Compose
+
+```bash
+docker compose up --build
+```
+
+URLs esperadas:
+
+```bash
+Frontend: http://localhost:3000
+Backend: http://localhost:8000/api/health/
+```
+
 ## Seguridad
 
 - No subir `.env` reales al repositorio.
@@ -110,4 +147,4 @@ GET http://localhost:8000/api/health/
 - [Despliegue VPS](docs/despliegue-vps.md)
 - [Backup y continuidad](docs/backup-continuidad.md)
 
-Desde el admin o desde la API ya queda preparada la creacion de `Material`, `Conversation`, `Message`, `Quiz` y `QuizQuestion`.
+Desde el admin o desde la API ya queda preparada la creacion de `Material`, `Conversation`, `Message`, `Quiz` y `QuizQuestion`, mientras el frontend base permite defender el flujo completo de navegacion e integracion inicial.
