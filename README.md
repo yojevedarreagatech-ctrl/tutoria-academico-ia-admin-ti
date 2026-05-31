@@ -102,6 +102,20 @@ Este sprint agrega carga y procesamiento basico de documentos:
 - Division del contenido en chunks
 - Persistencia de chunks en PostgreSQL
 
+## Sprint 4: embeddings y busqueda semantica
+
+Este sprint agrega:
+
+- `pgvector` sobre PostgreSQL
+- Embeddings para `DocumentChunk`
+- Generacion de embeddings usando `OPENAI_API_KEY`
+- Busqueda semantica sobre chunks almacenados
+
+Notas:
+
+- Aun no se implementa chat RAG completo.
+- Si `OPENAI_API_KEY` no esta configurada, los documentos siguen procesandose, pero sin embeddings.
+
 Nota:
 
 - En este sprint aun no hay embeddings, `pgvector`, RAG ni chat real con LLM.
@@ -155,6 +169,15 @@ Backend: http://localhost:8000/api/health/
 3. Abre `http://localhost:3000/materiales`.
 4. Sube un archivo `.txt` o `.pdf`.
 5. Verifica que el material aparezca con estado `processed` y con cantidad de chunks mayor que cero.
+
+## Probar busqueda semantica
+
+1. Verifica que `OPENAI_API_KEY` tenga un valor valido en `.env`.
+2. Levanta el proyecto y corre migraciones.
+3. Sube un material PDF o TXT.
+4. Si el material no tiene embeddings, usa el boton `Generar embeddings`.
+5. Abre `http://localhost:3000/admin-tecnico`.
+6. Ejecuta una busqueda semantica y revisa los chunks devueltos.
 
 ## Seguridad
 

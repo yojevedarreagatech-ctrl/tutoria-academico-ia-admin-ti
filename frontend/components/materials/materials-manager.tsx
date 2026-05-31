@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { getMaterials, uploadMaterial } from "@/lib/api";
+import { generateMaterialEmbeddings, getMaterials, uploadMaterial } from "@/lib/api";
 import type { Material, MaterialStatus } from "@/types/materials";
 import { SectionCard } from "@/components/ui/section-card";
 
@@ -20,6 +20,7 @@ export function MaterialsManager() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [embeddingMaterialId, setEmbeddingMaterialId] = useState<number | null>(null);
 
   async function loadMaterials() {
     setLoading(true);
@@ -62,6 +63,26 @@ export function MaterialsManager() {
       setError(submitError instanceof Error ? submitError.message : "No fue posible subir el archivo.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleGenerateEmbeddings(materialId: number) {
+    setEmbeddingMaterialId(materialId);
+    setError(null);
+
+    try {
+      const updatedMaterial = await generateMaterialEmbeddings(materialId);
+      setMaterials((current) =>
+        current.map((material) => (material.id === materialId ? updatedMaterial : material))
+      );
+    } catch (generationError) {
+      setError(
+        generationError instanceof Error
+          ? generationError.message
+          : "No fue posible generar embeddings para este material."
+      );
+    } finally {
+      setEmbeddingMaterialId(null);
     }
   }
 
@@ -146,6 +167,8 @@ export function MaterialsManager() {
                   <th className="px-4 py-3 font-semibold text-slate-600">Estado</th>
                   <th className="px-4 py-3 font-semibold text-slate-600">Fecha</th>
                   <th className="px-4 py-3 font-semibold text-slate-600">Chunks</th>
+                  <th className="px-4 py-3 font-semibold text-slate-600">Embeddings</th>
+                  <th className="px-4 py-3 font-semibold text-slate-600">Accion</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -167,6 +190,21 @@ export function MaterialsManager() {
                       {new Date(material.created_at).toLocaleString("es-GT")}
                     </td>
                     <td className="px-4 py-3 text-slate-700">{material.chunks_count}</td>
+                    <td className="px-4 py-3 text-slate-700">{material.embeddings_count ?? 0}</td>
+                    <td className="px-4 py-3">
+                      {material.status === "processed" ? (
+                        <button
+                          type="button"
+                          onClick={() => void handleGenerateEmbeddings(material.id)}
+                          disabled={embeddingMaterialId === material.id}
+                          className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-teal hover:text-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {embeddingMaterialId === material.id ? "Generando..." : "Generar embeddings"}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400">Disponible cuando este processed</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

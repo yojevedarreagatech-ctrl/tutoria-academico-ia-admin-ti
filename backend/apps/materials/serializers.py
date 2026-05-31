@@ -5,6 +5,7 @@ from .models import AudioTranscription, DocumentChunk, Material
 
 class MaterialSerializer(serializers.ModelSerializer):
     chunks_count = serializers.IntegerField(read_only=True)
+    embeddings_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Material
@@ -18,6 +19,7 @@ class MaterialSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "chunks_count",
+            "embeddings_count",
         ]
         read_only_fields = [
             "file_type",
@@ -26,6 +28,7 @@ class MaterialSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "chunks_count",
+            "embeddings_count",
         ]
 
 

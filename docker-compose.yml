@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: tutoria_backend
     working_dir: /app
-    command: "python manage.py runserver 0.0.0.0:8000"
+    command: 'sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"'
     env_file:
       - .env
     ports:
@@ -34,7 +34,7 @@ services:
       - backend
 
   db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: tutoria_db
     restart: unless-stopped
     environment:

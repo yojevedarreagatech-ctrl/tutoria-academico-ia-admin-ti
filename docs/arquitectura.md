@@ -40,6 +40,24 @@ Chunking sincronico
 Persistencia de Material + DocumentChunk en PostgreSQL
 ```
 
+## Flujo de embeddings y retrieval en Sprint 4
+
+```text
+Chunks persistidos
+  |
+  v
+Generacion de embeddings
+  |
+  v
+Almacenamiento en pgvector dentro de PostgreSQL
+  |
+  v
+Embedding de la query
+  |
+  v
+Semantic search por similitud
+```
+
 ## Componentes previstos por evolucion
 
 - `frontend/`: interfaz web del tutor academico.

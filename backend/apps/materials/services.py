@@ -88,6 +88,13 @@ def process_material(material: Material) -> Material:
             ]
         )
 
+        try:
+            from apps.ai_core.embeddings import generate_embeddings_for_material
+
+            generate_embeddings_for_material(material.id)
+        except Exception:
+            pass
+
         material.status = Material.Status.PROCESSED
         material.save(update_fields=["file_type", "original_text", "status", "updated_at"])
     except Exception:

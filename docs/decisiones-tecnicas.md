@@ -14,6 +14,13 @@ Documento base de Sprint 0. Aqui se registran decisiones de arquitectura y stack
 - Infraestructura como codigo futura con Terraform.
 - Despliegue objetivo en VPS Linux bajo `/srv/tutoria-academico` y puerto `8088`.
 
+## Justificacion de PostgreSQL + pgvector
+
+- Permite mantener datos transaccionales y vectores en el mismo sistema.
+- Simplifica despliegue en VPS al evitar un vector store separado en esta etapa.
+- Reduce complejidad operativa para el curso de Administracion de TI.
+- Deja una ruta clara para evolucionar a busqueda semantica antes de introducir RAG completo.
+
 ## Decisiones diferidas a siguientes sprints
 
 - Estrategia exacta de autenticacion y autorizacion.

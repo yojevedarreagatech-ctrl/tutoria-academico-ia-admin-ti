@@ -10,4 +10,5 @@ export type Material = {
   created_at: string;
   updated_at: string;
   chunks_count: number;
+  embeddings_count: number;
 };

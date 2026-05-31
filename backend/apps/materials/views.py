@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -11,6 +11,7 @@ from .serializers import (
     MaterialSerializer,
 )
 from .services import process_material
+from apps.ai_core.embeddings import EmbeddingConfigurationError, generate_embeddings_for_material
 
 
 class MaterialViewSet(viewsets.ModelViewSet):
@@ -18,7 +19,10 @@ class MaterialViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
-        return Material.objects.annotate(chunks_count=Count("chunks")).all()
+        return Material.objects.annotate(
+            chunks_count=Count("chunks", distinct=True),
+            embeddings_count=Count("chunks", filter=Q(chunks__embedding__isnull=False), distinct=True),
+        ).all()
 
     @action(detail=False, methods=["post"], url_path="upload")
     def upload(self, request):
@@ -52,6 +56,30 @@ class MaterialViewSet(viewsets.ModelViewSet):
         material_with_counts = self.get_queryset().get(pk=material.pk)
         serializer = self.get_serializer(material_with_counts)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="generate-embeddings")
+    def generate_embeddings(self, request, pk=None):
+        material = self.get_object()
+
+        if material.status != Material.Status.PROCESSED:
+            return Response(
+                {"detail": "Embeddings can only be generated for processed materials."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            generated = generate_embeddings_for_material(material.id)
+        except EmbeddingConfigurationError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        material_with_counts = self.get_queryset().get(pk=material.pk)
+        serializer = self.get_serializer(material_with_counts)
+        return Response(
+            {
+                "generated_embeddings": generated,
+                "material": serializer.data,
+            }
+        )
 
 
 class AudioTranscriptionViewSet(viewsets.ModelViewSet):

@@ -1,4 +1,5 @@
 from django.db import models
+from pgvector.django import VectorField
 
 
 class Material(models.Model):
@@ -68,6 +69,7 @@ class DocumentChunk(models.Model):
     chunk_index = models.PositiveIntegerField()
     metadata = models.JSONField(default=dict, blank=True)
     embedding_id = models.CharField(max_length=255, null=True, blank=True)
+    embedding = VectorField(dimensions=1536, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

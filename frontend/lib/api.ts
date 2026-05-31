@@ -1,5 +1,6 @@
 import type { HealthResponse } from "@/types/health";
 import type { Material } from "@/types/materials";
+import type { RetrievalResponse } from "@/types/retrieval";
 
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -68,4 +69,49 @@ export async function uploadMaterial(title: string, file: File): Promise<Materia
   }
 
   return payload as Material;
+}
+
+export async function generateMaterialEmbeddings(materialId: number): Promise<Material> {
+  const response = await fetch(buildApiUrl(`materials/${materialId}/generate-embeddings/`), {
+    method: "POST",
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String(payload.detail)
+        : `Embedding generation failed with status ${response.status}`;
+    throw new Error(detail);
+  }
+
+  return payload.material as Material;
+}
+
+export async function semanticSearch(query: string, topK = 5, materialId?: number): Promise<RetrievalResponse> {
+  const response = await fetch(buildApiUrl("retrieval/search/"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      query,
+      top_k: topK,
+      material_id: materialId || undefined,
+    }),
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String(payload.detail)
+        : `Semantic search failed with status ${response.status}`;
+    throw new Error(detail);
+  }
+
+  return payload as RetrievalResponse;
 }

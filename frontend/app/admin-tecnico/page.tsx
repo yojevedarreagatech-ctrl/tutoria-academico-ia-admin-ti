@@ -1,3 +1,4 @@
+import { SemanticSearchPanel } from "@/components/admin/semantic-search-panel";
 import { SectionCard } from "@/components/ui/section-card";
 import { HealthStatus } from "@/components/ui/health-status";
 
@@ -42,6 +43,8 @@ export default function AdminTecnicoPage() {
           ))}
         </div>
       </SectionCard>
+
+      <SemanticSearchPanel />
     </div>
   );
 }
