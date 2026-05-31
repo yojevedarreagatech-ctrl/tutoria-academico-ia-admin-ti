@@ -1,4 +1,5 @@
 import type { HealthResponse } from "@/types/health";
+import type { Material } from "@/types/materials";
 
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -27,4 +28,44 @@ export async function getHealth(): Promise<HealthResponse> {
 
 export function getConfiguredApiUrl(): string {
   return rawApiUrl;
+}
+
+export async function getMaterials(): Promise<Material[]> {
+  const response = await fetch(buildApiUrl("materials/"), {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Materials request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function uploadMaterial(title: string, file: File): Promise<Material> {
+  const formData = new FormData();
+  if (title.trim()) {
+    formData.append("title", title.trim());
+  }
+  formData.append("file", file);
+
+  const response = await fetch(buildApiUrl("materials/upload/"), {
+    method: "POST",
+    body: formData,
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String(payload.detail)
+        : `Upload failed with status ${response.status}`;
+    throw new Error(detail);
+  }
+
+  return payload as Material;
 }

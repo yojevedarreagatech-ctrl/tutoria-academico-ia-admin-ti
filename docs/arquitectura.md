@@ -19,6 +19,27 @@ API backend (Django REST Framework)
 PostgreSQL + pgvector
 ```
 
+## Flujo de documentos en Sprint 3
+
+```text
+Upload desde frontend
+  |
+  v
+POST /api/materials/upload/
+  |
+  v
+Guardado de archivo en MEDIA_ROOT
+  |
+  v
+Extraccion de texto (TXT/PDF)
+  |
+  v
+Chunking sincronico
+  |
+  v
+Persistencia de Material + DocumentChunk en PostgreSQL
+```
+
 ## Componentes previstos por evolucion
 
 - `frontend/`: interfaz web del tutor academico.
@@ -39,4 +60,5 @@ PostgreSQL + pgvector
 
 - Sprint 1: backend base con Django REST.
 - Sprint 2: frontend base y conexion con API.
+- Sprint 3: carga de documentos, extraccion y chunking.
 - Siguientes sprints: integracion progresiva de IA, RAG, almacenamiento vectorial, despliegue y continuidad operativa.

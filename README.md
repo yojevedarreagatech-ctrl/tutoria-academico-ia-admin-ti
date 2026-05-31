@@ -92,6 +92,20 @@ El frontend incluye:
 - Navegacion a `Dashboard`, `Materiales`, `Chat Tutor`, `Quizzes` y `Admin Tecnico`
 - Vistas placeholder listas para integracion posterior con endpoints reales
 
+## Sprint 3: documentos
+
+Este sprint agrega carga y procesamiento basico de documentos:
+
+- Formatos soportados: `PDF` y `TXT`
+- Upload desde la UI en `/materiales`
+- Extraccion de texto en backend
+- Division del contenido en chunks
+- Persistencia de chunks en PostgreSQL
+
+Nota:
+
+- En este sprint aun no hay embeddings, `pgvector`, RAG ni chat real con LLM.
+
 ## Comandos para desarrollo local
 
 ```bash
@@ -133,6 +147,14 @@ URLs esperadas:
 Frontend: http://localhost:3000
 Backend: http://localhost:8000/api/health/
 ```
+
+## Probar carga de documentos
+
+1. Levanta el proyecto con `docker compose up --build`.
+2. Ejecuta migraciones con `docker compose exec backend python manage.py migrate`.
+3. Abre `http://localhost:3000/materiales`.
+4. Sube un archivo `.txt` o `.pdf`.
+5. Verifica que el material aparezca con estado `processed` y con cantidad de chunks mayor que cero.
 
 ## Seguridad
 

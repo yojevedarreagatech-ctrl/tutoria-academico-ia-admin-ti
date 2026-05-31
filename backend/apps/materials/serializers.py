@@ -4,9 +4,29 @@ from .models import AudioTranscription, DocumentChunk, Material
 
 
 class MaterialSerializer(serializers.ModelSerializer):
+    chunks_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Material
-        fields = "__all__"
+        fields = [
+            "id",
+            "title",
+            "file",
+            "file_type",
+            "status",
+            "original_text",
+            "created_at",
+            "updated_at",
+            "chunks_count",
+        ]
+        read_only_fields = [
+            "file_type",
+            "status",
+            "original_text",
+            "created_at",
+            "updated_at",
+            "chunks_count",
+        ]
 
 
 class AudioTranscriptionSerializer(serializers.ModelSerializer):
