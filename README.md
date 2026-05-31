@@ -11,9 +11,9 @@ Base inicial del proyecto `tutoria-academico-ia-admin-ti`, pensado para crecer p
 
 Construir una aplicacion web de tutoria academica preparada para integrar, en sprints posteriores, capacidades como LLM, RAG, embeddings, vector store, salidas estructuradas, tool calling, workflows agentic, STT y persistencia, sin adelantar esa logica en Sprint 0.
 
-## Alcance de Sprint 0
+## Estado actual
 
-En este sprint solo se prepara una base ordenada, documentada y segura para desarrollo local y despliegue futuro. No se implementa todavia logica avanzada de IA, quizzes, autenticacion compleja ni flujos productivos completos.
+Sprint 1 deja operativo el backend base con Django REST Framework y PostgreSQL, manteniendo fuera por ahora la logica avanzada de IA, RAG, embeddings, LangChain, LangGraph, STT, quizzes con IA y autenticacion compleja.
 
 ## Stack propuesto
 
@@ -70,23 +70,31 @@ tutoria-academico-ia-admin-ti/
 4. Despliegue posterior a VPS Linux en `/srv/tutoria-academico`.
 5. Evolucion gradual hacia automatizacion con Terraform, CI/CD y backups.
 
-## Comandos previstos para desarrollo local
+## Backend Sprint 1
 
-Todavia son comandos base de preparacion. Se iran refinando cuando existan las apps reales.
+El backend incluye:
+
+- Proyecto Django con configuracion modular en `backend/config/`
+- Apps base: `accounts`, `materials`, `chat`, `quizzes`, `ai_core`
+- API REST con Django REST Framework
+- PostgreSQL como base de datos
+- CORS basico para desarrollo local
+- Endpoint de salud en `/api/health/`
+- Endpoints REST base para materiales, conversaciones, mensajes y quizzes
+
+## Comandos para desarrollo local
 
 ```bash
 cp .env.example .env
 docker compose up --build
-docker compose down
-docker compose logs -f
+docker compose exec backend python manage.py migrate
+docker compose logs -f backend
 ```
 
-Comandos esperados para siguientes sprints:
+Prueba basica esperada:
 
 ```bash
-docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py runserver 0.0.0.0:8000
-docker compose exec frontend npm run dev
+GET http://localhost:8000/api/health/
 ```
 
 ## Seguridad
@@ -102,6 +110,4 @@ docker compose exec frontend npm run dev
 - [Despliegue VPS](docs/despliegue-vps.md)
 - [Backup y continuidad](docs/backup-continuidad.md)
 
-## Estado actual
-
-Sprint 0 deja la base preparada para iniciar Sprint 1 con el backend base en Django REST, manteniendo el repositorio simple, limpio y listo para crecer.
+Desde el admin o desde la API ya queda preparada la creacion de `Material`, `Conversation`, `Message`, `Quiz` y `QuizQuestion`.
