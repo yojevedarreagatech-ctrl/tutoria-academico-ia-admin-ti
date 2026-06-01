@@ -1,9 +1,13 @@
 import type { HealthResponse } from "@/types/health";
 import type { ChatAskResponse } from "@/types/chat";
+import type { AudioUploadResponse } from "@/types/audio";
 import type { Material } from "@/types/materials";
 import type { RetrievalResponse } from "@/types/retrieval";
 
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+const rawWsUrl =
+  process.env.NEXT_PUBLIC_WS_URL ||
+  rawApiUrl.replace(/^http/, "ws").replace(/\/api\/?$/, "/ws");
 
 function buildApiUrl(path: string): string {
   const normalizedBase = rawApiUrl.replace(/\/+$/, "");
@@ -30,6 +34,10 @@ export async function getHealth(): Promise<HealthResponse> {
 
 export function getConfiguredApiUrl(): string {
   return rawApiUrl;
+}
+
+export function getConfiguredWsUrl(): string {
+  return rawWsUrl.replace(/\/+$/, "");
 }
 
 export async function getMaterials(): Promise<Material[]> {
@@ -72,6 +80,38 @@ export async function uploadMaterial(title: string, file: File): Promise<Materia
   return payload as Material;
 }
 
+export async function uploadAudioMaterial(
+  title: string,
+  audioFile: File,
+  transcriptionText?: string
+): Promise<AudioUploadResponse> {
+  const formData = new FormData();
+  if (title.trim()) {
+    formData.append("title", title.trim());
+  }
+  if (transcriptionText?.trim()) {
+    formData.append("transcription_text", transcriptionText.trim());
+  }
+  formData.append("audio_file", audioFile);
+
+  const response = await fetch(buildApiUrl("audio/upload/"), {
+    method: "POST",
+    body: formData,
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String(payload.detail)
+        : `Audio upload failed with status ${response.status}`;
+    throw new Error(detail);
+  }
+
+  return payload as AudioUploadResponse;
+}
+
 export async function generateMaterialEmbeddings(materialId: number): Promise<Material> {
   const response = await fetch(buildApiUrl(`materials/${materialId}/generate-embeddings/`), {
     method: "POST",
@@ -88,6 +128,25 @@ export async function generateMaterialEmbeddings(materialId: number): Promise<Ma
   }
 
   return payload.material as Material;
+}
+
+export async function deleteMaterial(materialId: number): Promise<void> {
+  const response = await fetch(buildApiUrl(`materials/${materialId}/`), {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    let detail = `Delete failed with status ${response.status}`;
+    try {
+      const payload = await response.json();
+      if (payload && typeof payload === "object" && "detail" in payload) {
+        detail = String(payload.detail);
+      }
+    } catch {
+      // Ignore JSON parsing if the response body is empty.
+    }
+    throw new Error(detail);
+  }
 }
 
 export async function semanticSearch(query: string, topK = 5, materialId?: number): Promise<RetrievalResponse> {

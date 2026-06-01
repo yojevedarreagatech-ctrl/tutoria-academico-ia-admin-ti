@@ -44,6 +44,7 @@ class AudioTranscription(models.Model):
     )
     audio_file = models.FileField(upload_to="audio/")
     transcription_text = models.TextField(blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
     status = models.CharField(
         max_length=20,
         choices=Status.choices,

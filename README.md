@@ -13,7 +13,14 @@ Construir una aplicacion web de tutoria academica preparada para integrar, en sp
 
 ## Estado actual
 
-Sprint 2 deja operativo un frontend base en Next.js con App Router, TypeScript y Tailwind CSS, conectado al backend Django REST para consultar el estado de salud del sistema.
+El proyecto ya cubre la base full stack con:
+
+- backend Django REST + PostgreSQL
+- frontend Next.js
+- carga y procesamiento de documentos y audio
+- embeddings + busqueda semantica
+- chat RAG con LangGraph
+- voice agent conversacional por WebSocket
 
 ## Stack propuesto
 
@@ -134,6 +141,73 @@ Este sprint agrega:
 - `search_materials_tool` como tool principal de retrieval
 - Endpoint de diagnostico en `/api/chat/workflow-info/`
 
+## Sprint 7: audio y voice agent
+
+Este sprint agrega:
+
+- Audio como material de estudio
+- STT para transcribir audio cargado
+- Reutilizacion del mismo pipeline de chunks y embeddings
+- Voice agent por WebSocket
+- TTS obligatorio para responder con voz en la demo
+
+## Sprint 7.1: experiencia conversacional
+
+Este ajuste mejora la UX del tutor:
+
+- Chat textual mas conversacional y continuo
+- Voice agent con una sola sesion activa
+- Deteccion automatica de fin de turno por silencio
+- Reanudacion automatica de escucha despues de cada respuesta
+- Historial visual de turnos en voz y texto
+
+## Sprint 7.2: alineacion total entre chat y voz
+
+Este ajuste asegura que ambos modos compartan exactamente la misma logica conversacional:
+
+- chat textual: texto -> flujo conversacional comun -> texto
+- voice agent: audio -> STT -> flujo conversacional comun -> texto -> TTS
+- continuidad por `conversation_id` durante toda la sesion
+- respuestas limpias sin mencionar `chunk #`, `chunk_id` ni metadatos internos
+
+## Sprint 7.4: control estricto de turnos en voz
+
+Este ajuste agrega:
+
+- `turn_id` por cada turno del usuario en voice agent
+- bloqueo de procesamiento paralelo
+- ignorar eventos atrasados en frontend
+- `practice_state` explicito para evitar desfase al practicar
+
+## Sprint 7.5: conversation manager compartido
+
+Este ajuste convierte el chat textual y el voice agent en dos interfaces del mismo cerebro conversacional:
+
+- `conversation_manager` central para texto y voz
+- deteccion de intencion por reglas simples antes de responder
+- `session_state` explicito para practica, continuidad y follow-ups
+- retrieval gating con umbrales configurables para evitar alucinaciones
+- acciones concretas como resumir, simplificar, dar ejemplo, practicar o rechazar preguntas fuera del material
+- respuestas de voz realmente mas cortas y controladas por configuracion
+
+Variables relevantes:
+
+- `STT_PROVIDER`
+- `ASSEMBLYAI_API_KEY`
+- `ASSEMBLYAI_SPEECH_MODEL`
+- `TTS_PROVIDER`
+- `CARTESIA_API_KEY`
+- `CARTESIA_LANGUAGE`
+- `CARTESIA_VOICE_ID`
+- `VOICE_AGENT_ENABLED`
+- `VOICE_AGENT_MAX_SENTENCES`
+- `VOICE_AGENT_MAX_WORDS`
+- `VOICE_AGENT_MAX_RESPONSE_SENTENCES`
+- `RETRIEVAL_MIN_SCORE`
+- `RETRIEVAL_MAX_DISTANCE`
+- `NEXT_PUBLIC_WS_URL`
+- `NEXT_PUBLIC_VOICE_AGENT_SILENCE_MS`
+
 ## Comandos para desarrollo local
 
 ```bash
@@ -201,12 +275,48 @@ Backend: http://localhost:8000/api/health/
 4. Escribe una pregunta relacionada con el contenido cargado.
 5. Revisa la respuesta del tutor y las fuentes consultadas.
 
+## Probar modo practica
+
+1. Abre `http://localhost:3000/chat`.
+2. Pide `Hazme una pregunta para practicar`.
+3. Responde la pregunta con tus propias palabras.
+4. Verifica que el tutor evalue tu respuesta antes de ofrecer otra pregunta.
+5. Pide `Otra pregunta` solo si quieres continuar practicando.
+
 ## Probar workflow LangGraph
 
 1. Llama `GET http://localhost:8000/api/chat/workflow-info/`.
 2. Verifica que el workflow reportado sea `LangGraph`.
 3. Verifica que `search_materials_tool` aparezca en la lista de tools.
 4. Prueba luego `/chat` normalmente: el frontend sigue usando el mismo endpoint `/api/chat/ask/`.
+
+## Probar audio como material
+
+1. Abre `http://localhost:3000/materiales`.
+2. En `Subir audio de estudio`, carga un archivo `mp3`, `wav`, `m4a` o `webm`.
+3. Si `STT_PROVIDER=manual`, agrega tambien `transcription_text`.
+4. Verifica que se cree la transcripcion, los chunks y los embeddings si `OPENAI_API_KEY` esta configurada.
+
+## Probar voice agent
+
+1. Verifica que el navegador tenga permiso de microfono.
+2. Verifica que `ASSEMBLYAI_API_KEY` y `CARTESIA_API_KEY` tengan valores validos.
+3. Abre `http://localhost:3000/chat`.
+4. Presiona `Iniciar conversacion`.
+5. Habla con normalidad y espera una breve pausa al terminar tu turno.
+6. Revisa la transcripcion final, la respuesta textual y la reproduccion automatica de audio.
+7. Al terminar la voz del tutor, el sistema vuelve a escuchar.
+
+Notas:
+
+- El modo voz reutiliza el mismo workflow RAG del chat textual.
+- El modo voz y el chat textual usan el mismo `conversation_manager`.
+- El modo voz mantiene el mismo `conversation_id` durante la sesion WebSocket.
+- El modo practica reutiliza la misma logica conversacional en chat textual y voz.
+- Cada turno de voz usa `turn_id` para mantener el orden correcto de respuestas.
+- Si retrieval no encuentra contexto suficientemente relevante, el tutor responde: `No puedo responder eso con la informacion cargada.`
+- Primero debe existir material procesado con embeddings.
+- Si falta `OPENAI_API_KEY`, `ASSEMBLYAI_API_KEY` o `CARTESIA_API_KEY`, veras un error claro segun el componente que falte.
 
 ## Seguridad
 

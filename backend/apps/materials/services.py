@@ -52,6 +52,47 @@ def split_text_into_chunks(text: str, chunk_size: int = 1000, overlap: int = 150
     return chunks
 
 
+def process_text_material(material: Material, text: str, source_type: str = "document") -> Material:
+    try:
+        material.status = Material.Status.PROCESSING
+        material.original_text = text
+        material.chunks.all().delete()
+
+        chunks = split_text_into_chunks(text)
+        DocumentChunk.objects.bulk_create(
+            [
+                DocumentChunk(
+                    material=material,
+                    content=chunk,
+                    chunk_index=index,
+                    metadata={
+                        "source_file": Path(material.file.name).name if material.file else material.title,
+                        "file_type": material.file_type,
+                        "source_type": source_type,
+                        "chunk_size": len(chunk),
+                    },
+                )
+                for index, chunk in enumerate(chunks)
+            ]
+        )
+
+        try:
+            from apps.ai_core.embeddings import generate_embeddings_for_material
+
+            generate_embeddings_for_material(material.id)
+        except Exception:
+            pass
+
+        material.status = Material.Status.PROCESSED
+        material.save(update_fields=["original_text", "status", "updated_at"])
+    except Exception:
+        material.status = Material.Status.ERROR
+        material.save(update_fields=["status", "updated_at"])
+        raise
+
+    return material
+
+
 def process_material(material: Material) -> Material:
     try:
         material.status = Material.Status.PROCESSING
@@ -68,35 +109,8 @@ def process_material(material: Material) -> Material:
             raise ValueError("Unsupported file type.")
 
         material.file_type = file_type
-        material.original_text = extracted_text
-        material.chunks.all().delete()
-
-        chunks = split_text_into_chunks(extracted_text)
-        DocumentChunk.objects.bulk_create(
-            [
-                DocumentChunk(
-                    material=material,
-                    content=chunk,
-                    chunk_index=index,
-                    metadata={
-                        "source_file": Path(material.file.name).name,
-                        "file_type": file_type,
-                        "chunk_size": len(chunk),
-                    },
-                )
-                for index, chunk in enumerate(chunks)
-            ]
-        )
-
-        try:
-            from apps.ai_core.embeddings import generate_embeddings_for_material
-
-            generate_embeddings_for_material(material.id)
-        except Exception:
-            pass
-
-        material.status = Material.Status.PROCESSED
-        material.save(update_fields=["file_type", "original_text", "status", "updated_at"])
+        material.save(update_fields=["file_type", "updated_at"])
+        process_text_material(material, extracted_text, source_type="document")
     except Exception:
         material.status = Material.Status.ERROR
         material.save(update_fields=["status", "updated_at"])

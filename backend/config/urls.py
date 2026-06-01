@@ -35,6 +35,11 @@ urlpatterns = [
     path("api/health/", HealthCheckView.as_view(), name="health-check"),
     path("api/chat/ask/", ChatAskView.as_view(), name="chat-ask"),
     path("api/chat/workflow-info/", ChatWorkflowInfoView.as_view(), name="chat-workflow-info"),
+    path(
+        "api/audio/upload/",
+        AudioTranscriptionViewSet.as_view({"post": "upload"}),
+        name="audio-upload",
+    ),
     path("api/retrieval/search/", RetrievalSearchView.as_view(), name="retrieval-search"),
     path("api/embeddings/generate-missing/", GenerateMissingEmbeddingsView.as_view(), name="generate-missing-embeddings"),
     path("api/", include(router.urls)),

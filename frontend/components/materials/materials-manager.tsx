@@ -2,7 +2,13 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { generateMaterialEmbeddings, getMaterials, uploadMaterial } from "@/lib/api";
+import {
+  deleteMaterial,
+  generateMaterialEmbeddings,
+  getMaterials,
+  uploadAudioMaterial,
+  uploadMaterial,
+} from "@/lib/api";
 import type { Material, MaterialStatus } from "@/types/materials";
 import { SectionCard } from "@/components/ui/section-card";
 
@@ -16,11 +22,15 @@ const statusStyles: Record<MaterialStatus, string> = {
 export function MaterialsManager() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [audioTitle, setAudioTitle] = useState("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [manualTranscription, setManualTranscription] = useState("");
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [embeddingMaterialId, setEmbeddingMaterialId] = useState<number | null>(null);
+  const [deletingMaterialId, setDeletingMaterialId] = useState<number | null>(null);
 
   async function loadMaterials() {
     setLoading(true);
@@ -83,6 +93,48 @@ export function MaterialsManager() {
       );
     } finally {
       setEmbeddingMaterialId(null);
+    }
+  }
+
+  async function handleDeleteMaterial(materialId: number) {
+    setDeletingMaterialId(materialId);
+    setError(null);
+
+    try {
+      await deleteMaterial(materialId);
+      setMaterials((current) => current.filter((material) => material.id !== materialId));
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "No fue posible eliminar el material.");
+    } finally {
+      setDeletingMaterialId(null);
+    }
+  }
+
+  async function handleAudioSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!audioFile) {
+      setError("Selecciona un archivo de audio.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await uploadAudioMaterial(audioTitle, audioFile, manualTranscription);
+      setAudioTitle("");
+      setAudioFile(null);
+      setManualTranscription("");
+      const input = document.getElementById("audio-file") as HTMLInputElement | null;
+      if (input) {
+        input.value = "";
+      }
+      await loadMaterials();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : "No fue posible subir el audio.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -150,6 +202,41 @@ export function MaterialsManager() {
         </div>
       </SectionCard>
 
+      <SectionCard
+        title="Subir audio de estudio"
+        description="Carga audio como material de estudio para generar transcripcion, chunks y embeddings."
+      >
+        <form onSubmit={handleAudioSubmit} className="grid gap-4 lg:grid-cols-2">
+          <input
+            type="text"
+            value={audioTitle}
+            onChange={(event) => setAudioTitle(event.target.value)}
+            placeholder="Titulo opcional del audio"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal"
+          />
+          <input
+            id="audio-file"
+            type="file"
+            accept=".mp3,.wav,.m4a,.webm,.ogg"
+            onChange={(event) => setAudioFile(event.target.files?.[0] ?? null)}
+            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
+          />
+          <textarea
+            value={manualTranscription}
+            onChange={(event) => setManualTranscription(event.target.value)}
+            placeholder="Transcripcion manual opcional para STT_PROVIDER=manual"
+            className="min-h-28 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal lg:col-span-2"
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-fit rounded-full bg-brand-gold px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-60"
+          >
+            {submitting ? "Procesando audio..." : "Subir audio"}
+          </button>
+        </form>
+      </SectionCard>
+
       <SectionCard title="Materiales cargados">
         {loading ? (
           <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">Cargando materiales...</div>
@@ -168,7 +255,7 @@ export function MaterialsManager() {
                   <th className="px-4 py-3 font-semibold text-slate-600">Fecha</th>
                   <th className="px-4 py-3 font-semibold text-slate-600">Chunks</th>
                   <th className="px-4 py-3 font-semibold text-slate-600">Embeddings</th>
-                  <th className="px-4 py-3 font-semibold text-slate-600">Accion</th>
+                  <th className="px-4 py-3 font-semibold text-slate-600">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -192,18 +279,29 @@ export function MaterialsManager() {
                     <td className="px-4 py-3 text-slate-700">{material.chunks_count}</td>
                     <td className="px-4 py-3 text-slate-700">{material.embeddings_count ?? 0}</td>
                     <td className="px-4 py-3">
-                      {material.status === "processed" ? (
+                      <div className="flex flex-wrap gap-2">
+                        {material.status === "processed" ? (
+                          <button
+                            type="button"
+                            onClick={() => void handleGenerateEmbeddings(material.id)}
+                            disabled={embeddingMaterialId === material.id}
+                            className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-teal hover:text-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {embeddingMaterialId === material.id ? "Generando..." : "Generar embeddings"}
+                          </button>
+                        ) : (
+                          <span className="self-center text-xs text-slate-400">Disponible cuando este processed</span>
+                        )}
+
                         <button
                           type="button"
-                          onClick={() => void handleGenerateEmbeddings(material.id)}
-                          disabled={embeddingMaterialId === material.id}
-                          className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-teal hover:text-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
+                          onClick={() => void handleDeleteMaterial(material.id)}
+                          disabled={deletingMaterialId === material.id}
+                          className="rounded-full border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          {embeddingMaterialId === material.id ? "Generando..." : "Generar embeddings"}
+                          {deletingMaterialId === material.id ? "Eliminando..." : "Eliminar"}
                         </button>
-                      ) : (
-                        <span className="text-xs text-slate-400">Disponible cuando este processed</span>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}

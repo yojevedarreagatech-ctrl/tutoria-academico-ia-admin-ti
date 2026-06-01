@@ -25,13 +25,27 @@ def receive_question(state: TutorWorkflowState) -> TutorWorkflowState:
     question = state.get("question", "").strip()
     if not question:
         return {"error": "La pregunta es obligatoria."}
-    return {"question": question, "error": None}
+    retrieval_query = state.get("retrieval_query", question).strip() or question
+    return {
+        "question": question,
+        "retrieval_query": retrieval_query,
+        "user_intent": state.get("user_intent", "normal_question"),
+        "awaiting_practice_answer": state.get("awaiting_practice_answer", False),
+        "last_practice_question": state.get("last_practice_question"),
+        "turn_id": state.get("turn_id"),
+        "error": None,
+    }
 
 
 def retrieve_context(state: TutorWorkflowState) -> TutorWorkflowState:
     return {
         "top_k": state.get("top_k", 5),
         "material_id": state.get("material_id"),
+        "response_mode": state.get("response_mode", "text"),
+        "retrieval_query": state.get("retrieval_query", state.get("question", "")),
+        "user_intent": state.get("user_intent", "normal_question"),
+        "awaiting_practice_answer": state.get("awaiting_practice_answer", False),
+        "last_practice_question": state.get("last_practice_question"),
     }
 
 
@@ -48,6 +62,7 @@ def call_tool(state: TutorWorkflowState) -> TutorWorkflowState:
         chunks = search_materials_tool.invoke(
             {
                 "question": state["question"],
+                "retrieval_query": state.get("retrieval_query", state["question"]),
                 "top_k": state.get("top_k", 5),
                 "material_id": state.get("material_id"),
             }
@@ -91,6 +106,10 @@ def generate_answer(state: TutorWorkflowState) -> TutorWorkflowState:
             question=state["question"],
             context_chunks=state.get("retrieved_chunks", []),
             conversation_history=state.get("conversation_history"),
+            response_mode=state.get("response_mode", "text"),
+            user_intent=state.get("user_intent"),
+            awaiting_practice_answer=state.get("awaiting_practice_answer", False),
+            last_practice_question=state.get("last_practice_question"),
         )
     except LLMConfigurationError as exc:
         return {"error": str(exc), "answer": None}

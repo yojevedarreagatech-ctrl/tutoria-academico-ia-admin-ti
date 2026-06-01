@@ -9,10 +9,15 @@ from .retrieval import semantic_search
 
 
 @tool("search_materials_tool")
-def search_materials_tool(question: str, top_k: int = 5, material_id: int | None = None) -> list[dict[str, Any]]:
+def search_materials_tool(
+    question: str,
+    retrieval_query: str | None = None,
+    top_k: int = 5,
+    material_id: int | None = None,
+) -> list[dict[str, Any]]:
     """Busca chunks relevantes en materiales procesados usando retrieval semantico."""
     try:
-        return semantic_search(query=question, top_k=top_k, material_id=material_id)
+        return semantic_search(query=(retrieval_query or question), top_k=top_k, material_id=material_id)
     except EmbeddingConfigurationError as exc:
         raise ValueError(str(exc)) from exc
     except ValueError:

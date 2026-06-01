@@ -34,6 +34,33 @@ Documento base de Sprint 0. Aqui se registran decisiones de arquitectura y stack
 - Hace visible la separacion entre nodos, tools y generacion.
 - Sirve como base defendible para evolucionar a flujos agentic mas complejos en siguientes sprints.
 
+## Justificacion de STT, TTS y WebSocket
+
+- AssemblyAI simplifica la transcripcion de audio con una API y SDK ya orientados a Speech AI.
+- Cartesia permite devolver voz sintetizada de forma rapida para la demo del tutor por voz.
+- WebSocket da una experiencia mas natural para voz que un request/response tradicional.
+- El prompt defensivo reduce riesgo de prompt injection desde documentos y transcripciones cargadas.
+
+## Justificacion del turn-taking por silencio
+
+- Evita obligar al usuario a presionar grabar/detener en cada pregunta.
+- Mantiene el sistema simple sin agregar Redis, Celery ni streaming server-side complejo.
+- Permite una experiencia cercana a conversacion real usando el workflow RAG ya existente.
+
+## Justificacion del Conversation Manager compartido
+
+- Evita tener dos cerebros distintos para chat textual y voice agent.
+- Permite que texto y voz compartan la misma deteccion de intenciones, continuidad y reglas de negocio.
+- Hace posible decidir si un turno requiere retrieval, historial previo o rechazo directo sin duplicar prompts.
+- Reduce tokens porque follow-ups como `mas corto`, `repiteme` o `dame un ejemplo` no rehacen retrieval siempre.
+
+## Justificacion del retrieval gating
+
+- Evita responder con definiciones del material cuando la pregunta esta fuera de alcance.
+- Corta alucinaciones antes de llamar al LLM.
+- Hace configurable el comportamiento con `RETRIEVAL_MIN_SCORE` y `RETRIEVAL_MAX_DISTANCE`.
+- Da una respuesta consistente y defendible: `No puedo responder eso con la informacion cargada.`
+
 ## Decisiones diferidas a siguientes sprints
 
 - Estrategia exacta de autenticacion y autorizacion.

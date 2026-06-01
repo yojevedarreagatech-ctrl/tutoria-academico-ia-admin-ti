@@ -1,0 +1,1 @@
+from apps.ai_core.voice_consumer import VoiceAgentConsumer
