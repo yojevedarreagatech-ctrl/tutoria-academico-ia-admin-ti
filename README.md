@@ -312,6 +312,26 @@ App: http://IP_DEL_VPS:8088
 Health: http://IP_DEL_VPS:8088/api/health/
 ```
 
+## Despliegue manual en VPS
+
+Resumen:
+
+- ruta del proyecto: `/srv/tutoria-academico`
+- puerto publico inicial: `8088`
+- archivo principal: `docker-compose.prod.yml`
+- script sugerido: `scripts/deploy.sh`
+- no subir `.env` al repositorio
+
+Flujo corto:
+
+```bash
+ssh usuario@IP_DEL_VPS
+cd /srv/tutoria-academico
+cp .env.example .env
+nano .env
+./scripts/deploy.sh
+```
+
 ## Probar carga de documentos
 
 1. Levanta el proyecto con `docker compose up --build`.

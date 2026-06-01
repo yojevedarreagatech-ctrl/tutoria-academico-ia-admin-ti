@@ -303,6 +303,16 @@ Servicios externos:
 - Nginx sirve `/media/` en produccion
 - Nginx tambien enruta `/ws/` hacia Daphne para el voice agent
 
+## Arquitectura de despliegue VPS
+
+- VPS Linux ya existente
+- proyecto aislado en `/srv/tutoria-academico`
+- Docker Compose propio para esta aplicacion
+- puerto publico `8088`
+- volumenes persistentes para base de datos, media y backups
+- servicios externos: OpenAI, AssemblyAI y Cartesia
+- no se toca ni se reutiliza el despliegue del LIS en produccion
+
 ## Componentes previstos por evolucion
 
 - `frontend/`: interfaz web del tutor academico.
