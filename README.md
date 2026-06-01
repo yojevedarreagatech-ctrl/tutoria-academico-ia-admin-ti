@@ -125,6 +125,15 @@ Este sprint agrega:
 - Persistencia de conversaciones y mensajes
 - Fuentes consultadas por respuesta
 
+## Sprint 6: LangGraph y workflow con tools
+
+Este sprint agrega:
+
+- Workflow del chat implementado con LangGraph
+- Estado compartido para el flujo del tutor
+- `search_materials_tool` como tool principal de retrieval
+- Endpoint de diagnostico en `/api/chat/workflow-info/`
+
 ## Comandos para desarrollo local
 
 ```bash
@@ -191,6 +200,13 @@ Backend: http://localhost:8000/api/health/
 3. Abre `http://localhost:3000/chat`.
 4. Escribe una pregunta relacionada con el contenido cargado.
 5. Revisa la respuesta del tutor y las fuentes consultadas.
+
+## Probar workflow LangGraph
+
+1. Llama `GET http://localhost:8000/api/chat/workflow-info/`.
+2. Verifica que el workflow reportado sea `LangGraph`.
+3. Verifica que `search_materials_tool` aparezca en la lista de tools.
+4. Prueba luego `/chat` normalmente: el frontend sigue usando el mismo endpoint `/api/chat/ask/`.
 
 ## Seguridad
 

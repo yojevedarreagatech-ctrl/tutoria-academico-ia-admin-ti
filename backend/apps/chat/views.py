@@ -4,9 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.ai_core.embeddings import EmbeddingConfigurationError
-from apps.ai_core.llm import LLMConfigurationError, LLMGenerationError, generate_tutor_answer
-from apps.ai_core.retrieval import semantic_search
+from apps.ai_core.graph import get_workflow_info, run_tutor_workflow
 from .models import Conversation, Message
 from .api_serializers import ChatAskSerializer
 from .serializers import ConversationSerializer, MessageSerializer
@@ -73,29 +71,32 @@ class ChatAskView(APIView):
             for message in reversed(list(history_qs))
         ]
 
-        try:
-            retrieved_chunks = semantic_search(question, top_k=top_k, material_id=material_id)
-        except EmbeddingConfigurationError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        workflow_result = run_tutor_workflow(
+            {
+                "question": question,
+                "conversation_id": conversation.id,
+                "top_k": top_k,
+                "material_id": material_id,
+                "conversation_history": history[:-1],
+                "retrieved_chunks": [],
+                "sources": [],
+                "answer": None,
+                "error": None,
+            }
+        )
 
-        if not retrieved_chunks:
+        if workflow_result.get("error"):
             return Response(
-                {"detail": "No hay contenido indexado con embeddings para responder."},
+                {"detail": workflow_result["error"]},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            answer = generate_tutor_answer(
-                question=question,
-                context_chunks=retrieved_chunks,
-                conversation_history=history[:-1],
+        answer = workflow_result.get("answer")
+        if not answer:
+            return Response(
+                {"detail": "No fue posible generar una respuesta del tutor."},
+                status=status.HTTP_502_BAD_GATEWAY,
             )
-        except LLMConfigurationError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        except LLMGenerationError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_502_BAD_GATEWAY)
 
         Message.objects.create(
             conversation=conversation,
@@ -103,21 +104,18 @@ class ChatAskView(APIView):
             content=answer,
         )
 
-        sources = [
-            {
-                "chunk_id": chunk["chunk_id"],
-                "material_id": chunk["material_id"],
-                "material_title": chunk["material_title"],
-                "chunk_index": chunk["chunk_index"],
-                "content_preview": chunk["content"][:220],
-            }
-            for chunk in retrieved_chunks
-        ]
-
         return Response(
             {
                 "conversation_id": conversation.id,
                 "answer": answer,
-                "sources": sources,
+                "sources": workflow_result.get("sources", []),
             }
         )
+
+
+class ChatWorkflowInfoView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        return Response(get_workflow_info())

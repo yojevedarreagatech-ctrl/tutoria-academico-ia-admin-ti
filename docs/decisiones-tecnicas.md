@@ -28,6 +28,12 @@ Documento base de Sprint 0. Aqui se registran decisiones de arquitectura y stack
 - Facilita evolucion futura hacia agentes o flujos mas complejos sin reescribir el buscador.
 - Mejora el manejo de errores cuando falla el embedding, el retrieval o el modelo de lenguaje.
 
+## Justificacion de LangGraph en esta etapa
+
+- Permite introducir un workflow con estado sin romper el contrato externo del chat.
+- Hace visible la separacion entre nodos, tools y generacion.
+- Sirve como base defendible para evolucionar a flujos agentic mas complejos en siguientes sprints.
+
 ## Decisiones diferidas a siguientes sprints
 
 - Estrategia exacta de autenticacion y autorizacion.

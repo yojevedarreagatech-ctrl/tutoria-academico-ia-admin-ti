@@ -79,6 +79,27 @@ LLM genera respuesta
 Persistencia de mensajes y devolucion de fuentes
 ```
 
+## Workflow agentic en Sprint 6
+
+```text
+Pregunta
+  |
+  v
+Estado compartido
+  |
+  v
+Tool de retrieval
+  |
+  v
+Contexto recuperado
+  |
+  v
+Generacion de respuesta
+  |
+  v
+Respuesta final
+```
+
 ## Componentes previstos por evolucion
 
 - `frontend/`: interfaz web del tutor academico.
