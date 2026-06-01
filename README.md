@@ -116,9 +116,14 @@ Notas:
 - Aun no se implementa chat RAG completo.
 - Si `OPENAI_API_KEY` no esta configurada, los documentos siguen procesandose, pero sin embeddings.
 
-Nota:
+## Sprint 5: chat tutor con RAG
 
-- En este sprint aun no hay embeddings, `pgvector`, RAG ni chat real con LLM.
+Este sprint agrega:
+
+- Chat tutor conectado a retrieval
+- Generacion de respuestas con LLM usando contexto recuperado
+- Persistencia de conversaciones y mensajes
+- Fuentes consultadas por respuesta
 
 ## Comandos para desarrollo local
 
@@ -178,6 +183,14 @@ Backend: http://localhost:8000/api/health/
 4. Si el material no tiene embeddings, usa el boton `Generar embeddings`.
 5. Abre `http://localhost:3000/admin-tecnico`.
 6. Ejecuta una busqueda semantica y revisa los chunks devueltos.
+
+## Probar chat RAG
+
+1. Verifica que `OPENAI_API_KEY` tenga un valor valido en `.env`.
+2. Asegura que exista al menos un documento procesado con embeddings.
+3. Abre `http://localhost:3000/chat`.
+4. Escribe una pregunta relacionada con el contenido cargado.
+5. Revisa la respuesta del tutor y las fuentes consultadas.
 
 ## Seguridad
 

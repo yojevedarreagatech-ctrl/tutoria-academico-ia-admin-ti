@@ -4,6 +4,8 @@ from .models import Conversation, Message
 
 
 class ConversationSerializer(serializers.ModelSerializer):
+    messages_count = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Conversation
         fields = "__all__"

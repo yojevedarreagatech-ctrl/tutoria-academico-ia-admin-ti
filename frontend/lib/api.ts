@@ -1,4 +1,5 @@
 import type { HealthResponse } from "@/types/health";
+import type { ChatAskResponse } from "@/types/chat";
 import type { Material } from "@/types/materials";
 import type { RetrievalResponse } from "@/types/retrieval";
 
@@ -114,4 +115,31 @@ export async function semanticSearch(query: string, topK = 5, materialId?: numbe
   }
 
   return payload as RetrievalResponse;
+}
+
+export async function askTutor(question: string, conversationId?: number | null): Promise<ChatAskResponse> {
+  const response = await fetch(buildApiUrl("chat/ask/"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      question,
+      conversation_id: conversationId || undefined,
+      top_k: 5,
+    }),
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String(payload.detail)
+        : `Chat request failed with status ${response.status}`;
+    throw new Error(detail);
+  }
+
+  return payload as ChatAskResponse;
 }

@@ -21,6 +21,13 @@ Documento base de Sprint 0. Aqui se registran decisiones de arquitectura y stack
 - Reduce complejidad operativa para el curso de Administracion de TI.
 - Deja una ruta clara para evolucionar a busqueda semantica antes de introducir RAG completo.
 
+## Justificacion de separar retrieval y generacion
+
+- Mantiene bajo acoplamiento entre busqueda semantica y capa LLM.
+- Permite probar retrieval de forma aislada desde API o UI tecnica.
+- Facilita evolucion futura hacia agentes o flujos mas complejos sin reescribir el buscador.
+- Mejora el manejo de errores cuando falla el embedding, el retrieval o el modelo de lenguaje.
+
 ## Decisiones diferidas a siguientes sprints
 
 - Estrategia exacta de autenticacion y autorizacion.

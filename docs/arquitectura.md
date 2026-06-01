@@ -58,6 +58,27 @@ Embedding de la query
 Semantic search por similitud
 ```
 
+## Flujo RAG en Sprint 5
+
+```text
+Pregunta del usuario
+  |
+  v
+Embedding de la pregunta
+  |
+  v
+Retrieval con pgvector
+  |
+  v
+Prompt con contexto + historial reciente
+  |
+  v
+LLM genera respuesta
+  |
+  v
+Persistencia de mensajes y devolucion de fuentes
+```
+
 ## Componentes previstos por evolucion
 
 - `frontend/`: interfaz web del tutor academico.
@@ -79,4 +100,6 @@ Semantic search por similitud
 - Sprint 1: backend base con Django REST.
 - Sprint 2: frontend base y conexion con API.
 - Sprint 3: carga de documentos, extraccion y chunking.
+- Sprint 4: embeddings y busqueda semantica.
+- Sprint 5: chat tutor con RAG.
 - Siguientes sprints: integracion progresiva de IA, RAG, almacenamiento vectorial, despliegue y continuidad operativa.

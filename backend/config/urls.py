@@ -5,6 +5,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.chat.views import ConversationViewSet, MessageViewSet
+from apps.chat.views import ChatAskView
 from apps.ai_core.views import GenerateMissingEmbeddingsView, RetrievalSearchView
 from apps.materials.views import (
     AudioTranscriptionViewSet,
@@ -32,6 +33,7 @@ router.register("quiz-questions", QuizQuestionViewSet, basename="quiz-question")
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/health/", HealthCheckView.as_view(), name="health-check"),
+    path("api/chat/ask/", ChatAskView.as_view(), name="chat-ask"),
     path("api/retrieval/search/", RetrievalSearchView.as_view(), name="retrieval-search"),
     path("api/embeddings/generate-missing/", GenerateMissingEmbeddingsView.as_view(), name="generate-missing-embeddings"),
     path("api/", include(router.urls)),
