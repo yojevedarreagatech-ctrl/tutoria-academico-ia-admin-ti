@@ -32,6 +32,16 @@ El proyecto ya cubre la base full stack con:
 - IaC futuro: Terraform
 - Despliegue futuro: VPS Linux en `/srv/tutoria-academico` usando el puerto `8088`
 
+## Sprint 9: Docker Compose completo
+
+Este sprint deja listo:
+
+- `docker-compose.yml` para desarrollo local
+- `docker-compose.prod.yml` para VPS
+- persistencia de PostgreSQL y media files
+- healthchecks para `db` y `backend`
+- Nginx interno para exponer la app en `8088` en produccion
+
 ## Arquitectura inicial
 
 ```text
@@ -227,6 +237,27 @@ docker compose exec backend python manage.py migrate
 docker compose logs -f backend
 ```
 
+## Desarrollo local sin Docker
+
+Backend:
+
+```bash
+cd backend
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
 Prueba basica esperada:
 
 ```bash
@@ -260,6 +291,27 @@ Frontend: http://localhost:3000
 Backend: http://localhost:8000/api/health/
 ```
 
+## Produccion con Docker Compose
+
+```bash
+cp .env.example .env
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec backend python manage.py migrate
+```
+
+Opcional:
+
+```bash
+docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser
+```
+
+URLs esperadas:
+
+```bash
+App: http://IP_DEL_VPS:8088
+Health: http://IP_DEL_VPS:8088/api/health/
+```
+
 ## Probar carga de documentos
 
 1. Levanta el proyecto con `docker compose up --build`.
@@ -276,6 +328,14 @@ Backend: http://localhost:8000/api/health/
 4. Si el material no tiene embeddings, usa el boton `Generar embeddings`.
 5. Abre `http://localhost:3000/admin-tecnico`.
 6. Ejecuta una busqueda semantica y revisa los chunks devueltos.
+
+## Healthchecks utiles
+
+```bash
+docker compose ps
+docker compose logs -f backend
+curl http://localhost:8000/api/health/
+```
 
 ## Probar chat RAG
 

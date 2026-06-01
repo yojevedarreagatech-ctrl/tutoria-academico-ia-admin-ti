@@ -270,6 +270,39 @@ Persistencia de Quiz + QuizQuestion
 UI de practica en /quizzes
 ```
 
+## Arquitectura Docker en Sprint 9
+
+```text
+Frontend (Next.js)
+  |
+  v
+Nginx en 8088
+  | \
+  |  \__ /ws/ y /api/
+  v
+Backend Django + Daphne
+  |
+  v
+PostgreSQL + pgvector
+
+Volumenes:
+- postgres_data
+- media_data
+- backups_data
+
+Servicios externos:
+- OpenAI
+- AssemblyAI
+- Cartesia
+```
+
+## Media y WebSocket
+
+- documentos y audios se guardan en `media_data`
+- el backend usa `MEDIA_ROOT=/app/media`
+- Nginx sirve `/media/` en produccion
+- Nginx tambien enruta `/ws/` hacia Daphne para el voice agent
+
 ## Componentes previstos por evolucion
 
 - `frontend/`: interfaz web del tutor academico.
