@@ -249,6 +249,27 @@ El conversation manager convierte la intencion detectada en una accion concreta:
 - `evaluate_practice_answer`
 - `clarify`
 
+## Flujo de quizzes con structured output
+
+```text
+Material procesado
+  |
+  v
+Chunks
+  |
+  v
+LLM con salida JSON estructurada
+  |
+  v
+Validacion del payload
+  |
+  v
+Persistencia de Quiz + QuizQuestion
+  |
+  v
+UI de practica en /quizzes
+```
+
 ## Componentes previstos por evolucion
 
 - `frontend/`: interfaz web del tutor academico.

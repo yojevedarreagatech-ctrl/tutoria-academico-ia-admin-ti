@@ -3,6 +3,7 @@ import type { ChatAskResponse } from "@/types/chat";
 import type { AudioUploadResponse } from "@/types/audio";
 import type { Material } from "@/types/materials";
 import type { RetrievalResponse } from "@/types/retrieval";
+import type { Quiz, QuizCheckAnswerResponse } from "@/types/quizzes";
 
 const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 const rawWsUrl =
@@ -201,4 +202,75 @@ export async function askTutor(question: string, conversationId?: number | null)
   }
 
   return payload as ChatAskResponse;
+}
+
+export async function getQuizzes(): Promise<Quiz[]> {
+  const response = await fetch(buildApiUrl("quizzes/"), {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Quizzes request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function generateQuiz(materialId: number, numQuestions: number): Promise<Quiz> {
+  const response = await fetch(buildApiUrl("quizzes/generate/"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      material_id: materialId,
+      num_questions: numQuestions,
+    }),
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String(payload.detail)
+        : `Quiz generation failed with status ${response.status}`;
+    throw new Error(detail);
+  }
+
+  return payload as Quiz;
+}
+
+export async function checkQuizAnswer(
+  quizId: number,
+  questionId: number,
+  selectedAnswer: string
+): Promise<QuizCheckAnswerResponse> {
+  const response = await fetch(buildApiUrl(`quizzes/${quizId}/check-answer/`), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      question_id: questionId,
+      selected_answer: selectedAnswer,
+    }),
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      payload && typeof payload === "object" && "detail" in payload
+        ? String(payload.detail)
+        : `Quiz answer check failed with status ${response.status}`;
+    throw new Error(detail);
+  }
+
+  return payload as QuizCheckAnswerResponse;
 }

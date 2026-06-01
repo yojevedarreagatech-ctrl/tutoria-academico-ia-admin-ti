@@ -61,6 +61,13 @@ Documento base de Sprint 0. Aqui se registran decisiones de arquitectura y stack
 - Hace configurable el comportamiento con `RETRIEVAL_MIN_SCORE` y `RETRIEVAL_MAX_DISTANCE`.
 - Da una respuesta consistente y defendible: `No puedo responder eso con la informacion cargada.`
 
+## Justificacion de structured output para quizzes
+
+- Evita respuestas libres dificiles de guardar en base de datos.
+- Permite validar que cada pregunta tenga 4 opciones y una respuesta correcta consistente.
+- Facilita persistencia limpia en `Quiz` y `QuizQuestion`.
+- Hace la demo mas defendible porque muestra validacion previa al guardado.
+
 ## Decisiones diferidas a siguientes sprints
 
 - Estrategia exacta de autenticacion y autorizacion.

@@ -190,6 +190,16 @@ Este ajuste convierte el chat textual y el voice agent en dos interfaces del mis
 - acciones concretas como resumir, simplificar, dar ejemplo, practicar o rechazar preguntas fuera del material
 - respuestas de voz realmente mas cortas y controladas por configuracion
 
+## Sprint 8: mini quizzes con structured output
+
+Este sprint agrega:
+
+- generacion de mini quizzes desde materiales procesados
+- structured output en JSON antes de guardar
+- validacion de preguntas, opciones, respuesta correcta y explicacion
+- persistencia en `Quiz` y `QuizQuestion`
+- UI de practica en `/quizzes`
+
 Variables relevantes:
 
 - `STT_PROVIDER`
@@ -317,6 +327,30 @@ Notas:
 - Si retrieval no encuentra contexto suficientemente relevante, el tutor responde: `No puedo responder eso con la informacion cargada.`
 - Primero debe existir material procesado con embeddings.
 - Si falta `OPENAI_API_KEY`, `ASSEMBLYAI_API_KEY` o `CARTESIA_API_KEY`, veras un error claro segun el componente que falte.
+
+## Probar quizzes
+
+1. Verifica que `OPENAI_API_KEY` tenga un valor valido.
+2. Asegura que exista un material con estado `processed` y con chunks.
+3. Abre `http://localhost:3000/quizzes`.
+4. Selecciona un material y genera un quiz de 3 o 5 preguntas.
+5. Revisa las respuestas y explicaciones.
+
+Structured output esperado:
+
+```json
+{
+  "title": "Quiz sobre el material",
+  "questions": [
+    {
+      "question": "Texto de la pregunta",
+      "options": ["A", "B", "C", "D"],
+      "correct_answer": "A",
+      "explanation": "Explicacion breve basada en el material"
+    }
+  ]
+}
+```
 
 ## Seguridad
 

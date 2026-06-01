@@ -135,4 +135,4 @@ El voice agent del Sprint 7 reutiliza el mismo workflow:
 - No hay tool calling formal multi-tool.
 - No hay LangGraph orientado a agentes complejos ni ramas sofisticadas.
 - El voice agent usa deteccion de silencio en frontend como fallback conversacional en lugar de streaming STT completo.
-- No incluye generacion de quizzes.
+- Los quizzes son un flujo separado de practica academica y no reemplazan al chat RAG.
