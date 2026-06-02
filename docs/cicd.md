@@ -59,6 +59,7 @@ El workflow `deploy.yml`:
 7. Ejecuta:
 
 ```bash
+docker-compose -f docker-compose.prod.yml down --remove-orphans
 docker-compose -f docker-compose.prod.yml up -d --build
 docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate
 docker-compose -f docker-compose.prod.yml ps
@@ -84,6 +85,7 @@ Importante:
 - no se guardan secretos en el repositorio
 - no se guarda `.env` en Git
 - la llave SSH vive solo en GitHub Secrets
+- el VPS usa `docker-compose` v1
 
 ## Riesgos y mitigaciones
 
@@ -92,6 +94,7 @@ Importante:
 Mitigacion:
 
 - no se usa `docker-compose down -v`
+- `docker-compose down --remove-orphans` solo recrea contenedores del proyecto
 - no se borran volumenes
 - no se usa `docker volume rm`
 
@@ -106,6 +109,7 @@ Mitigacion:
 Mitigacion:
 
 - el deploy usa `docker-compose`, que es el comando ya utilizado en la VPS
+- no se cambia a `docker compose`
 
 ### Riesgo: falla posterior al deploy
 

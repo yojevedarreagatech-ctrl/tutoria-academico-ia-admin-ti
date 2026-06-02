@@ -26,6 +26,9 @@ echo "Actualizando codigo fuente con git pull..."
 git fetch origin main
 git pull --ff-only origin main
 
+echo "Recreando contenedores de produccion sin borrar volumenes..."
+docker-compose -f "$COMPOSE_FILE" down --remove-orphans
+
 echo "Levantando contenedores de produccion..."
 docker-compose -f "$COMPOSE_FILE" up -d --build
 

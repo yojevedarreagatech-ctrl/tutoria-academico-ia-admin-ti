@@ -9,7 +9,7 @@ Preparar un despliegue manual, aislado y no destructivo para `TutorIA Academico`
 - Sistema operativo objetivo: Linux.
 - Ruta del proyecto: `/srv/tutoria-academico`.
 - Puerto de exposicion de la aplicacion: `8088`.
-- Ejecucion prevista mediante Docker Compose.
+- Ejecucion prevista mediante `docker-compose` v1.
 - Reverse proxy interno con Nginx.
 - La aplicacion LIS existente no se modifica ni comparte compose con este proyecto.
 
@@ -78,6 +78,7 @@ Importante:
 ### G. Levantar contenedores
 
 ```bash
+docker-compose -f docker-compose.prod.yml down --remove-orphans
 docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
@@ -169,10 +170,19 @@ Cuando haces `push` a `main`, GitHub Actions:
 3. Entra a `$PROJECT_PATH`.
 4. Verifica que exista `.env`.
 5. Ejecuta `git fetch` y `git pull --ff-only`.
-6. Ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`.
-7. Ejecuta migraciones.
-8. Muestra `docker-compose -f docker-compose.prod.yml ps`.
-9. Ejecuta un healthcheck final.
+6. Ejecuta `docker-compose -f docker-compose.prod.yml down --remove-orphans`.
+7. Ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`.
+8. Ejecuta migraciones.
+9. Muestra `docker-compose -f docker-compose.prod.yml ps`.
+10. Ejecuta un healthcheck final.
+
+Notas importantes:
+
+- el VPS usa `docker-compose` v1
+- no se usa `docker compose`
+- la recreacion es controlada y no elimina volumenes
+- no se usa `down -v`
+- no se tocan contenedores fuera del proyecto
 
 ### Como verificar Actions
 
