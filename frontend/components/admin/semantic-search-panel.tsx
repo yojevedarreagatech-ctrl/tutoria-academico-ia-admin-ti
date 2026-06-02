@@ -3,8 +3,10 @@
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { getMaterials, semanticSearch } from "@/lib/api";
+import { getFriendlyError } from "@/lib/ui-errors";
 import type { Material } from "@/types/materials";
 import type { RetrievalResult } from "@/types/retrieval";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SectionCard } from "@/components/ui/section-card";
 
 export function SemanticSearchPanel() {
@@ -31,11 +33,7 @@ export function SemanticSearchPanel() {
       setResults(response.results);
     } catch (searchError) {
       setResults([]);
-      setError(
-        searchError instanceof Error
-          ? searchError.message
-          : "No fue posible ejecutar la busqueda semantica."
-      );
+      setError(getFriendlyError(searchError, "No fue posible ejecutar la busqueda semantica."));
     } finally {
       setLoading(false);
     }
@@ -43,8 +41,8 @@ export function SemanticSearchPanel() {
 
   return (
     <SectionCard
-      title="Semantic search"
-      description="Explora resultados recuperados por embeddings."
+      title="Busqueda semantica"
+      description="Explora el contenido indexado por similitud semantica."
     >
       <form onSubmit={handleSearch} className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr_auto]">
         <input
@@ -79,19 +77,17 @@ export function SemanticSearchPanel() {
 
       <div className="mt-6 space-y-4">
         {results.length === 0 ? (
-          <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            Aun no hay resultados.
-          </div>
+          <EmptyState title="Sin resultados" description="Escribe una consulta y busca en todos los materiales o filtra por uno especifico." />
         ) : (
           results.map((result) => (
             <article key={result.chunk_id} className="rounded-[1.5rem] border border-black/5 bg-white p-5">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-brand-ink">{result.material_title}</h3>
-                  <p className="text-sm text-slate-500">Chunk #{result.chunk_index}</p>
+                  <p className="text-sm text-slate-500">Fragmento {result.chunk_index + 1}</p>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                  score {result.score.toFixed(4)}
+                  similitud {result.score.toFixed(4)}
                 </span>
               </div>
               <p className="mt-4 text-sm leading-7 text-slate-700">{result.content}</p>

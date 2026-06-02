@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { checkQuizAnswer, generateQuiz, getMaterials, getQuizzes } from "@/lib/api";
+import { getFriendlyError } from "@/lib/ui-errors";
 import type { Material } from "@/types/materials";
 import type { Quiz, QuizCheckAnswerResponse } from "@/types/quizzes";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
 
 type ReviewState = Record<
@@ -46,7 +49,7 @@ export function QuizzesManager() {
           }
         }
       } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "No fue posible cargar quizzes.");
+        setError(getFriendlyError(loadError, "No fue posible cargar quizzes."));
       } finally {
         setLoading(false);
       }
@@ -69,7 +72,7 @@ export function QuizzesManager() {
       setActiveQuiz(quiz);
       setReviewState({});
     } catch (generationError) {
-      setError(generationError instanceof Error ? generationError.message : "No fue posible generar el quiz.");
+      setError(getFriendlyError(generationError, "No fue posible generar el quiz."));
     } finally {
       setGenerating(false);
     }
@@ -93,7 +96,7 @@ export function QuizzesManager() {
         },
       }));
     } catch (checkError) {
-      setError(checkError instanceof Error ? checkError.message : "No fue posible revisar la respuesta.");
+      setError(getFriendlyError(checkError, "No fue posible revisar la respuesta."));
     }
   }
 
@@ -103,22 +106,25 @@ export function QuizzesManager() {
 
   return (
     <div className="space-y-8">
+      <PageHeader
+        eyebrow="Práctica académica"
+        title="Quizzes de práctica"
+        description="Genera preguntas desde tus materiales y revisa el resultado en una sola sesión."
+      />
+
       <SectionCard
-        title="Quizzes"
-        description="Practica sobre contenido real con generacion automatica."
+        title="Generar quiz"
+        description="Selecciona un material procesado y el número de preguntas."
       >
         <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[1.75rem] border border-black/5 bg-white p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Generate</p>
-            <h3 className="mt-3 text-2xl font-semibold tracking-tight text-brand-ink">Crear quiz</h3>
-
+          <div className="rounded-[1.75rem] border border-brand-mist bg-white p-6">
             <div className="mt-5 space-y-4">
               <label className="block text-sm text-slate-700">
                 Material
                 <select
                   value={selectedMaterialId}
                   onChange={(event) => setSelectedMaterialId(event.target.value ? Number(event.target.value) : "")}
-                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none focus:border-black"
+                  className="mt-2 w-full rounded-2xl border border-brand-mist bg-white px-4 py-3 text-sm outline-none focus:border-brand-teal"
                 >
                   <option value="">Selecciona un material</option>
                   {processedMaterials.map((material) => (
@@ -134,7 +140,7 @@ export function QuizzesManager() {
                 <select
                   value={numQuestions}
                   onChange={(event) => setNumQuestions(Number(event.target.value))}
-                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none focus:border-black"
+                  className="mt-2 w-full rounded-2xl border border-brand-mist bg-white px-4 py-3 text-sm outline-none focus:border-brand-teal"
                 >
                   <option value={3}>3 preguntas</option>
                   <option value={5}>5 preguntas</option>
@@ -146,15 +152,15 @@ export function QuizzesManager() {
               type="button"
               onClick={() => void handleGenerateQuiz()}
               disabled={generating || !selectedMaterialId}
-              className="mt-5 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 rounded-full bg-brand-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {generating ? "Generando..." : "Generar quiz"}
             </button>
           </div>
 
-          <div className="rounded-[1.75rem] bg-black p-6 text-white">
-            <p className="text-sm uppercase tracking-[0.18em] text-slate-400">Ready to practice</p>
-            <div className="mt-5 rounded-2xl bg-white/10 px-4 py-4 text-sm text-slate-200">
+          <div className="rounded-[1.75rem] bg-brand-teal p-6 text-white">
+            <p className="text-sm uppercase tracking-[0.18em] text-cyan-100">Listo para practicar</p>
+            <div className="mt-5 rounded-2xl bg-white/10 px-4 py-4 text-sm text-slate-100">
               {processedMaterials.length > 0
                 ? `${processedMaterials.length} materiales procesados disponibles para generar quizzes.`
                 : "Todavia no hay materiales procesados listos para quizzes."}
@@ -165,21 +171,22 @@ export function QuizzesManager() {
 
       {error ? <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
 
-      <SectionCard title="Quiz activo" description="Selecciona respuestas y revisa explicaciones.">
+      <SectionCard title="Quiz activo" description="Responde cada pregunta y revisa la explicación.">
         {activeQuiz ? (
           <div className="space-y-6">
-            <div className="rounded-[1.5rem] border border-black/5 bg-white p-6">
+            <div className="rounded-[1.5rem] border border-brand-mist bg-white p-6">
               <h3 className="text-2xl font-semibold text-brand-ink">{activeQuiz.title}</h3>
               {activeQuiz.description ? (
                 <p className="mt-2 text-sm leading-7 text-slate-600">{activeQuiz.description}</p>
               ) : null}
-              <p className="mt-3 text-sm text-slate-500">
-                Material: {activeQuiz.material_title || "Sin material"} | Correctas: {correctCount}/{activeQuiz.questions.length}
-              </p>
+              <p className="mt-3 text-sm text-slate-500">Material: {activeQuiz.material_title || "Sin material"}</p>
+              <div className="mt-4 rounded-2xl bg-brand-sand px-4 py-3 text-sm font-semibold text-brand-ink">
+                Obtuviste {correctCount} de {activeQuiz.questions.length}
+              </div>
             </div>
 
             {activeQuiz.questions.map((question, index) => (
-              <div key={question.id} className="rounded-[1.5rem] border border-black/5 bg-white p-6">
+              <div key={question.id} className="rounded-[1.5rem] border border-brand-mist bg-white p-6">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Pregunta {index + 1}
                 </p>
@@ -193,8 +200,8 @@ export function QuizzesManager() {
                         key={option}
                         className={`cursor-pointer rounded-2xl border px-4 py-3 text-sm transition ${
                           selected
-                            ? "border-black bg-slate-100 text-brand-ink"
-                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-black"
+                            ? "border-brand-teal bg-brand-sand text-brand-ink"
+                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-brand-teal"
                         }`}
                       >
                         <input
@@ -222,7 +229,7 @@ export function QuizzesManager() {
                 <button
                   type="button"
                   onClick={() => void handleCheckAnswer(activeQuiz.id, question.id)}
-                  className="mt-5 rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                  className="mt-5 rounded-full border border-brand-mist px-4 py-2 text-sm font-semibold text-brand-teal transition hover:bg-brand-sand"
                 >
                   Revisar respuesta
                 </button>
@@ -246,9 +253,7 @@ export function QuizzesManager() {
             ))}
           </div>
         ) : (
-          <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white px-5 py-6 text-sm text-slate-600">
-            Genera o abre un quiz para empezar.
-          </div>
+          <EmptyState title="Todavia no has iniciado un quiz" description="Genera uno nuevo o abre un quiz existente para practicar." />
         )}
       </SectionCard>
 
@@ -265,7 +270,7 @@ export function QuizzesManager() {
                   setActiveQuiz(quiz);
                   setReviewState({});
                 }}
-                className="rounded-[1.5rem] border border-black/5 bg-white p-5 text-left transition hover:border-black"
+                className="rounded-[1.5rem] border border-brand-mist bg-white p-5 text-left transition hover:border-brand-teal"
               >
                 <h3 className="text-lg font-semibold text-brand-ink">{quiz.title}</h3>
                 <p className="mt-2 text-sm text-slate-600">{quiz.material_title || "Sin material asociado"}</p>
@@ -276,9 +281,7 @@ export function QuizzesManager() {
             ))}
           </div>
         ) : (
-          <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white px-5 py-6 text-sm text-slate-600">
-            No hay quizzes generados todavia.
-          </div>
+          <EmptyState title="No hay quizzes guardados" description="Genera uno desde un material procesado para comenzar a practicar." />
         )}
       </SectionCard>
     </div>

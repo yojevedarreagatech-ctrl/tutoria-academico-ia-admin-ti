@@ -9,14 +9,18 @@ import {
   uploadAudioMaterial,
   uploadMaterial,
 } from "@/lib/api";
+import { getFriendlyError } from "@/lib/ui-errors";
 import type { Material, MaterialStatus } from "@/types/materials";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
+import { StatusBadge } from "@/components/ui/status-badge";
 
-const statusStyles: Record<MaterialStatus, string> = {
-  pending: "bg-amber-50 text-amber-800",
-  processing: "bg-sky-50 text-sky-800",
-  processed: "bg-emerald-50 text-emerald-800",
-  error: "bg-rose-50 text-rose-800",
+const statusConfig: Record<MaterialStatus, { label: string; tone: "warning" | "info" | "success" | "danger" }> = {
+  pending: { label: "Pendiente", tone: "warning" },
+  processing: { label: "Procesando", tone: "info" },
+  processed: { label: "Procesado", tone: "success" },
+  error: { label: "Error", tone: "danger" },
 };
 
 export function MaterialsManager() {
@@ -51,7 +55,7 @@ export function MaterialsManager() {
       setMaterials(data);
       setError(null);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "No fue posible cargar materiales.");
+      setError(getFriendlyError(loadError, "No fue posible cargar materiales."));
     } finally {
       setLoading(false);
     }
@@ -83,7 +87,7 @@ export function MaterialsManager() {
       }
       await loadMaterials();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "No fue posible subir el archivo.");
+      setError(getFriendlyError(submitError, "No fue posible subir el archivo."));
     } finally {
       setSubmitting(false);
     }
@@ -99,11 +103,7 @@ export function MaterialsManager() {
         current.map((material) => (material.id === materialId ? updatedMaterial : material))
       );
     } catch (generationError) {
-      setError(
-        generationError instanceof Error
-          ? generationError.message
-          : "No fue posible generar embeddings para este material."
-      );
+      setError(getFriendlyError(generationError, "No fue posible generar embeddings para este material."));
     } finally {
       setEmbeddingMaterialId(null);
     }
@@ -117,7 +117,7 @@ export function MaterialsManager() {
       await deleteMaterial(materialId);
       setMaterials((current) => current.filter((material) => material.id !== materialId));
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "No fue posible eliminar el material.");
+      setError(getFriendlyError(deleteError, "No fue posible eliminar el material."));
     } finally {
       setDeletingMaterialId(null);
     }
@@ -146,7 +146,7 @@ export function MaterialsManager() {
       }
       await loadMaterials();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "No fue posible subir el audio.");
+      setError(getFriendlyError(submitError, "No fue posible subir el audio."));
     } finally {
       setSubmitting(false);
     }
@@ -154,14 +154,17 @@ export function MaterialsManager() {
 
   return (
     <div className="space-y-8">
-      <SectionCard
-        title="Materiales"
-        description="Sube contenido y preparalo para consulta, voz y quizzes."
-      >
-        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <PageHeader
+        eyebrow="Biblioteca académica"
+        title="Materiales de estudio"
+        description="Carga documentos y audios para indexarlos y consultarlos desde el tutor."
+      />
+
+      <div className="grid gap-8 xl:grid-cols-[1.15fr_0.85fr]">
+        <SectionCard title="Documentos" description="PDF y TXT listos para procesar.">
           <form
             onSubmit={handleSubmit}
-            className="space-y-4 rounded-[1.75rem] border border-black/5 bg-white/90 p-6"
+            className="space-y-4"
           >
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="title">
@@ -190,8 +193,8 @@ export function MaterialsManager() {
               />
             </div>
 
-            <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
-              Soporta PDF, TXT y flujo posterior de embeddings.
+            <div className="rounded-2xl bg-brand-sand px-4 py-3 text-sm text-slate-600">
+              Al subir un archivo, el sistema extrae texto, crea chunks e intenta indexarlo automaticamente.
             </div>
 
             {error ? <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
@@ -199,66 +202,64 @@ export function MaterialsManager() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-brand-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Procesando..." : "Subir material"}
             </button>
           </form>
+        </SectionCard>
 
-          <div className="rounded-[1.75rem] bg-black p-6 text-white">
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Pipeline</p>
-            <h3 className="mt-3 text-2xl font-semibold tracking-tight">Contenido listo para IA</h3>
-            <div className="mt-5 grid gap-3 text-sm text-slate-200">
-              <div className="rounded-2xl bg-white/10 px-4 py-3">Carga y extraccion</div>
-              <div className="rounded-2xl bg-white/10 px-4 py-3">Chunking persistido</div>
-              <div className="rounded-2xl bg-white/10 px-4 py-3">Embeddings bajo demanda</div>
+        <div className="space-y-8">
+          <SectionCard title="Audio" description="Convierte clases o notas de voz en material consultable.">
+            <form onSubmit={handleAudioSubmit} className="grid gap-4 lg:grid-cols-2">
+              <input
+                type="text"
+                value={audioTitle}
+                onChange={(event) => setAudioTitle(event.target.value)}
+                placeholder="Titulo opcional del audio"
+                className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal"
+              />
+              <input
+                id="audio-file"
+                type="file"
+                accept=".mp3,.wav,.m4a,.webm,.ogg"
+                onChange={(event) => setAudioFile(event.target.files?.[0] ?? null)}
+                className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-slate-500"
+              />
+              <textarea
+                value={manualTranscription}
+                onChange={(event) => setManualTranscription(event.target.value)}
+                placeholder="Transcripcion manual opcional"
+                className="min-h-28 rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal lg:col-span-2"
+              />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-fit rounded-full bg-brand-gold px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+              >
+                {submitting ? "Procesando audio..." : "Subir audio"}
+              </button>
+            </form>
+          </SectionCard>
+
+          <SectionCard title="Estado del módulo" description="Todo el contenido procesado queda listo para consultar en Tutor IA y Quizzes.">
+            <div className="grid gap-3 text-sm text-slate-600">
+              <div className="rounded-2xl bg-brand-sand px-4 py-3">Contenido indexado con chunks y embeddings.</div>
+              <div className="rounded-2xl bg-brand-sand px-4 py-3">Audio y documentos comparten la misma base de conocimiento.</div>
+              <div className="rounded-2xl bg-brand-sand px-4 py-3">Los materiales procesados quedan listos para consulta y práctica.</div>
             </div>
-          </div>
+          </SectionCard>
         </div>
-      </SectionCard>
-
-      <SectionCard
-        title="Audio"
-        description="Sube una clase o nota de voz y conviertela en material consultable."
-      >
-        <form onSubmit={handleAudioSubmit} className="grid gap-4 lg:grid-cols-2">
-          <input
-            type="text"
-            value={audioTitle}
-            onChange={(event) => setAudioTitle(event.target.value)}
-            placeholder="Titulo opcional del audio"
-            className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black"
-          />
-          <input
-            id="audio-file"
-            type="file"
-            accept=".mp3,.wav,.m4a,.webm,.ogg"
-            onChange={(event) => setAudioFile(event.target.files?.[0] ?? null)}
-            className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-slate-500"
-          />
-          <textarea
-            value={manualTranscription}
-            onChange={(event) => setManualTranscription(event.target.value)}
-            placeholder="Transcripcion manual opcional"
-            className="min-h-28 rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black lg:col-span-2"
-          />
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-fit rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-          >
-            {submitting ? "Procesando audio..." : "Subir audio"}
-          </button>
-        </form>
-      </SectionCard>
+      </div>
 
       <SectionCard title="Materiales cargados">
         {loading ? (
           <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">Cargando materiales...</div>
         ) : materials.length === 0 ? (
-          <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            No hay materiales todavia.
-          </div>
+          <EmptyState
+            title="Todavia no hay materiales"
+            description="Sube un documento o un audio para empezar a construir tu base de estudio."
+          />
         ) : (
           <div className="overflow-hidden rounded-[1.5rem] border border-black/5 bg-white">
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
@@ -279,21 +280,21 @@ export function MaterialsManager() {
                     <td className="px-4 py-3 text-slate-700">
                       <div className="font-medium">{material.title}</div>
                       {material.status === "processed" ? (
-                          <div className="mt-1 text-xs text-emerald-700">Listo para consulta y practica.</div>
+                        <div className="mt-1 text-xs text-emerald-700">Listo para consultar</div>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-slate-500">{material.file_type.toUpperCase()}</td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusStyles[material.status]}`}>
-                        {material.status}
-                      </span>
+                      <StatusBadge tone={statusConfig[material.status].tone}>
+                        {statusConfig[material.status].label}
+                      </StatusBadge>
                     </td>
                     <td className="px-4 py-3 text-slate-500">
                       {new Date(material.created_at).toLocaleString("es-GT")}
                     </td>
                     <td className="px-4 py-3 text-slate-700">{material.chunks_count}</td>
                     <td className="px-4 py-3 text-slate-700">
-                      {material.embeddings_count > 0 ? material.embeddings_count : "Pendiente"}
+                      {material.embeddings_count > 0 ? "Contenido indexado" : "Pendiente"}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
@@ -302,17 +303,17 @@ export function MaterialsManager() {
                             type="button"
                             onClick={() => void handleGenerateEmbeddings(material.id)}
                             disabled={embeddingMaterialId === material.id}
-                            className="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-full border border-brand-mist px-3 py-2 text-xs font-semibold text-brand-teal transition hover:bg-brand-sand disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {embeddingMaterialId === material.id ? "Generando..." : "Reintentar embeddings"}
                           </button>
                         ) : null}
 
                         {material.embeddings_count > 0 ? (
-                          <span className="self-center text-xs text-emerald-700">Embeddings listos</span>
+                          <span className="self-center text-xs text-emerald-700">Listo para consultar</span>
                         ) : (
                           <span className="self-center text-xs text-slate-400">
-                            {material.status === "processed" ? "Auto" : "Disponible al procesar"}
+                            {material.status === "processed" ? "Indexacion automatica" : "Disponible al procesar"}
                           </span>
                         )}
 

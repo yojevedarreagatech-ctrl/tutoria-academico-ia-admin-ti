@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getConfiguredWsUrl } from "@/lib/api";
+import { getFriendlyError } from "@/lib/ui-errors";
 import type { ChatSource } from "@/types/chat";
 import type { VoiceAgentEvent, VoiceAgentPhase, VoiceConnectionStatus } from "@/types/voice";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SectionCard } from "@/components/ui/section-card";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 
 type VoiceTurn = {
   id: string;
@@ -316,7 +319,7 @@ export function VoiceAgentPanel() {
     };
 
     socket.onerror = () => {
-      setError("No fue posible conectar el voice agent.");
+      setError("No se pudo conectar con el backend. Verifica que el servicio este activo.");
       setConnectionStatus("disconnected");
       setPhase("stopped");
     };
@@ -521,11 +524,7 @@ export function VoiceAgentPanel() {
       }
     } catch (micError) {
       setSessionActive(false);
-      setError(
-        micError instanceof Error
-          ? micError.message
-          : "No fue posible acceder al microfono para iniciar la conversacion."
-      );
+      setError(getFriendlyError(micError, "No fue posible acceder al microfono para iniciar la conversacion."));
     }
   }
 
@@ -591,24 +590,31 @@ export function VoiceAgentPanel() {
 
   return (
     <SectionCard
-      title="Voice mode"
-      description="Conversacion por voz con turnos y respuesta hablada."
+      title="Conversación por voz"
+      description="Habla con el tutor y recibe una respuesta textual y hablada."
     >
       <div className="space-y-5">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-teal/10 text-brand-teal">
+            <div
+              className={`h-6 w-6 rounded-full ${
+                phase === "listening" ? "animate-pulse bg-brand-teal" : "bg-brand-gold"
+              }`}
+            />
+          </div>
           <button
             type="button"
             onClick={() => void startConversation()}
             disabled={sessionActive}
-            className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full bg-brand-teal px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {sessionActive ? "Sesion activa" : "Iniciar voz"}
+            {sessionActive ? "Conversacion activa" : "Iniciar conversación"}
           </button>
           <button
             type="button"
             onClick={stopConversation}
             disabled={!sessionActive}
-            className="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-brand-mist px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Finalizar
           </button>
@@ -616,62 +622,46 @@ export function VoiceAgentPanel() {
             type="button"
             onClick={toggleMicPause}
             disabled={!sessionActive}
-            className="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-brand-mist px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-brand-sand disabled:cursor-not-allowed disabled:opacity-60"
           >
             {micPaused ? "Reanudar microfono" : "Pausar microfono"}
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
-            <span className="font-semibold text-brand-ink">Conexion:</span> {connectionStatus}
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-[1.5rem] border border-brand-mist bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Estado</p>
+            <p className="mt-2 text-lg font-semibold text-brand-ink">{getReadableStatus()}</p>
           </div>
-          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
-            <span className="font-semibold text-brand-ink">Estado:</span> {getReadableStatus()}
+          <div className="rounded-[1.5rem] border border-brand-mist bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Conexión</p>
+            <p className="mt-2 text-lg font-semibold text-brand-ink">
+              {connectionStatus === "connected" ? "Estable" : connectionStatus === "connecting" ? "Conectando" : "Sin conexión"}
+            </p>
           </div>
-          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
-            <span className="font-semibold text-brand-ink">Conversacion:</span>{" "}
-            {conversationId ? `#${conversationId}` : "sin iniciar"}
-          </div>
-          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
-            <span className="font-semibold text-brand-ink">Practice:</span> {practiceState}
+          <div className="rounded-[1.5rem] border border-brand-mist bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Modo</p>
+            <p className="mt-2 text-lg font-semibold text-brand-ink">Tutor por voz</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500">
-          Debug: conversation_id={conversationId ?? "null"} | current_turn_id={currentTurnId ?? "null"} | status={phase} | practice_state={practiceState} | intent={lastIntent ?? "null"} | action={lastAction ?? "null"}
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[1.5rem] bg-black p-5 text-white">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Live audio</p>
-            <h3 className="mt-3 text-xl font-semibold">Interaccion fluida por turnos</h3>
-            <div className="mt-5 space-y-3 text-sm text-slate-200">
-              <div className="rounded-xl bg-white/10 px-4 py-3">
-                <span className="font-semibold">Estado actual:</span> {getReadableStatus()}
-              </div>
-              <div className="rounded-xl bg-white/10 px-4 py-3">
-                <span className="font-semibold">Silencio para cerrar turno:</span> {DEFAULT_SILENCE_MS} ms
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-black/5 bg-white p-4">
+        <div className="rounded-[1.5rem] border border-brand-mist bg-white p-4">
             <div
               ref={historyRef}
-              className="max-h-[28rem] space-y-4 overflow-y-auto rounded-[1.2rem] bg-slate-50/80 p-4"
+              className="max-h-[28rem] space-y-4 overflow-y-auto rounded-[1.25rem] bg-brand-sand/70 p-4"
             >
               {turns.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm text-slate-500">
-                  Inicia una sesion y habla con naturalidad.
-                </div>
+                <EmptyState
+                  title="Listo para conversar"
+                  description="Pulsa iniciar conversación y habla con naturalidad cuando el estado cambie a escuchando."
+                />
               ) : (
                 turns.map((turn) => (
                   <div key={turn.id} className="space-y-3">
-                    <div className="ml-auto max-w-[88%] rounded-2xl bg-black px-4 py-3 text-sm leading-6 text-white">
+                    <div className="ml-auto max-w-[88%] rounded-2xl bg-brand-teal px-4 py-3 text-sm leading-6 text-white">
                       {turn.userText}
                     </div>
-                    <div className="max-w-[92%] rounded-2xl border border-black/5 bg-white px-4 py-4 text-sm text-slate-700 shadow-sm">
+                    <div className="max-w-[92%] rounded-2xl border border-brand-mist bg-white px-4 py-4 text-sm text-slate-700 shadow-sm">
                       {turn.assistantText ? (
                         <p className="leading-7">{turn.assistantText}</p>
                       ) : (
@@ -683,16 +673,17 @@ export function VoiceAgentPanel() {
                       )}
 
                       {turn.sources.length > 0 ? (
-                        <div className="mt-4 rounded-xl border border-black/5 bg-slate-50 px-4 py-3">
-                          <p className="font-semibold text-brand-ink">Sources</p>
-                          <div className="mt-3 space-y-3">
-                            {turn.sources.map((source) => (
-                              <div key={`${turn.id}-${source.chunk_id}`} className="rounded-lg bg-white p-3">
-                                <p className="font-medium text-slate-700">{source.material_title}</p>
-                                <p className="mt-1 text-xs leading-6 text-slate-500">{source.content_preview}</p>
-                              </div>
-                            ))}
-                          </div>
+                        <div className="mt-4">
+                          <TechnicalDetails summary="Ver fuentes consultadas">
+                            <div className="space-y-3">
+                              {turn.sources.map((source) => (
+                                <div key={`${turn.id}-${source.chunk_id}`} className="rounded-lg bg-white p-3">
+                                  <p className="font-medium text-slate-700">{source.material_title}</p>
+                                  <p className="mt-1 text-xs leading-6 text-slate-500">{source.content_preview}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </TechnicalDetails>
                         </div>
                       ) : null}
                     </div>
@@ -701,19 +692,30 @@ export function VoiceAgentPanel() {
               )}
 
               {partialTranscript ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600">
-                  <span className="font-semibold text-brand-ink">Captura actual:</span> {partialTranscript}
+                <div className="rounded-2xl border border-dashed border-brand-mist bg-white px-4 py-3 text-sm text-slate-600">
+                  <span className="font-semibold text-brand-ink">Transcripción en curso:</span> {partialTranscript}
                 </div>
               ) : null}
             </div>
-          </div>
         </div>
 
         {finalTranscript ? (
-          <div className="rounded-xl bg-white p-4 text-sm text-slate-700">
-            <span className="font-semibold text-brand-ink">Ultima transcripcion final:</span> {finalTranscript}
+          <div className="rounded-[1.25rem] border border-brand-mist bg-white p-4 text-sm text-slate-700">
+            <span className="font-semibold text-brand-ink">Última transcripción:</span> {finalTranscript}
           </div>
         ) : null}
+
+        <TechnicalDetails>
+          <div className="space-y-2 font-mono text-xs">
+            <p>conversation_id={conversationId ?? "null"}</p>
+            <p>current_turn_id={currentTurnId ?? "null"}</p>
+            <p>status={phase}</p>
+            <p>practice_state={practiceState}</p>
+            <p>intent={lastIntent ?? "null"}</p>
+            <p>action={lastAction ?? "null"}</p>
+            <p>silence_ms={DEFAULT_SILENCE_MS}</p>
+          </div>
+        </TechnicalDetails>
 
         {error ? <div className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700">{error}</div> : null}
       </div>
