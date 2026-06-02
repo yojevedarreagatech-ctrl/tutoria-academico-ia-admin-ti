@@ -2,7 +2,7 @@
 
 set -eu
 
-PROJECT_DIR="/srv/tutoria-academico"
+PROJECT_DIR="${PROJECT_DIR:-/srv/tutoria-academico}"
 COMPOSE_FILE="docker-compose.prod.yml"
 
 echo "Despliegue manual de TutorIA Academico en VPS"
@@ -23,13 +23,17 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 
 echo "Actualizando codigo fuente con git pull..."
-git pull
+git fetch origin main
+git pull --ff-only origin main
 
 echo "Levantando contenedores de produccion..."
-docker compose -f "$COMPOSE_FILE" up -d --build
+docker-compose -f "$COMPOSE_FILE" up -d --build
 
 echo "Ejecutando migraciones..."
-docker compose -f "$COMPOSE_FILE" exec backend python manage.py migrate
+docker-compose -f "$COMPOSE_FILE" exec -T backend python manage.py migrate
 
 echo "Estado actual de contenedores:"
-docker compose -f "$COMPOSE_FILE" ps
+docker-compose -f "$COMPOSE_FILE" ps
+
+echo "Healthcheck:"
+curl -f http://127.0.0.1:8088/api/health/ || curl -f https://tutoria.centromedicolosencinos.tech/api/health/

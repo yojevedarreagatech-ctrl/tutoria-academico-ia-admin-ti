@@ -28,7 +28,7 @@ El proyecto ya cubre la base full stack con:
 - Backend: Python + Django + Django REST Framework
 - Base de datos futura: PostgreSQL + pgvector
 - Infraestructura: Docker + Docker Compose
-- CI/CD futuro: GitHub Actions
+- CI/CD: GitHub Actions
 - IaC futuro: Terraform
 - Despliegue futuro: VPS Linux en `/srv/tutoria-academico` usando el puerto `8088`
 
@@ -41,6 +41,17 @@ Este sprint deja listo:
 - persistencia de PostgreSQL y media files
 - healthchecks para `db` y `backend`
 - Nginx interno para exponer la app en `8088` en produccion
+
+## Sprint 11: CI/CD con GitHub Actions
+
+Este sprint agrega:
+
+- validacion automatica de backend y frontend en cada `push` a `main`
+- validacion en `pull_request` hacia `main`
+- despliegue automatico por SSH hacia la VPS al hacer `push` a `main`
+- rebuild no destructivo con `docker-compose -f docker-compose.prod.yml up -d --build`
+- migraciones automaticas con `docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate`
+- healthcheck posterior al despliegue
 
 ## Arquitectura inicial
 
@@ -83,9 +94,9 @@ tutoria-academico-ia-admin-ti/
 
 1. Desarrollo local con `frontend`, `backend` y `db` mediante Docker Compose.
 2. Versionado y colaboracion desde Git/GitHub.
-3. Validaciones basicas con GitHub Actions.
-4. Despliegue posterior a VPS Linux en `/srv/tutoria-academico`.
-5. Evolucion gradual hacia automatizacion con Terraform, CI/CD y backups.
+3. Validaciones automaticas con GitHub Actions.
+4. Despliegue automatico a VPS Linux en `/srv/tutoria-academico`.
+5. Evolucion gradual hacia Terraform, observabilidad y backups.
 
 ## Backend Sprint 1
 
@@ -295,14 +306,14 @@ Backend: http://localhost:8000/api/health/
 
 ```bash
 cp .env.example .env
-docker compose -f docker-compose.prod.yml up -d --build
-docker compose -f docker-compose.prod.yml exec backend python manage.py migrate
+docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate
 ```
 
 Opcional:
 
 ```bash
-docker compose -f docker-compose.prod.yml exec backend python manage.py createsuperuser
+docker-compose -f docker-compose.prod.yml exec -T backend python manage.py createsuperuser
 ```
 
 URLs esperadas:
@@ -331,6 +342,34 @@ cp .env.example .env
 nano .env
 ./scripts/deploy.sh
 ```
+
+## CI/CD con GitHub Actions
+
+`push` a `main` dispara:
+
+- `CI`: valida backend y frontend
+- `Deploy`: se conecta por SSH al VPS y actualiza el despliegue productivo
+
+`pull_request` hacia `main` dispara:
+
+- `CI`: validacion de backend y frontend antes de merge
+
+Secrets requeridos en GitHub:
+
+- `VPS_HOST`
+- `VPS_USER`
+- `VPS_SSH_KEY`
+- `PROJECT_PATH`
+
+Notas del flujo:
+
+- `PROJECT_PATH` debe apuntar a `/srv/tutoria-academico`
+- el deploy usa `docker-compose`, no `docker compose`
+- el repositorio no guarda `.env`, llaves SSH ni API keys
+- el despliegue hace `git fetch` y `git pull --ff-only`
+- luego ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`
+- despues corre migraciones y un healthcheck
+- no se usan comandos destructivos como `docker-compose down -v`
 
 ## Probar carga de documentos
 
@@ -443,6 +482,7 @@ Structured output esperado:
 - [Arquitectura](docs/arquitectura.md)
 - [Decisiones tecnicas](docs/decisiones-tecnicas.md)
 - [Despliegue VPS](docs/despliegue-vps.md)
+- [CI/CD](docs/cicd.md)
 - [Backup y continuidad](docs/backup-continuidad.md)
 
 Desde el admin o desde la API ya queda preparada la creacion de `Material`, `Conversation`, `Message`, `Quiz` y `QuizQuestion`, mientras el frontend base permite defender el flujo completo de navegacion e integracion inicial.

@@ -8,9 +8,9 @@
 
 ## Docker Compose
 
-- [ ] `docker compose -f docker-compose.prod.yml ps` muestra contenedores `up`.
+- [ ] `docker-compose -f docker-compose.prod.yml ps` muestra contenedores `up`.
 - [ ] Existe evidencia visual o por terminal de `db`, `backend`, `frontend` y `nginx`.
-- [ ] `docker compose -f docker-compose.prod.yml logs -f backend` no muestra errores criticos al iniciar.
+- [ ] `docker-compose -f docker-compose.prod.yml logs -f backend` no muestra errores criticos al iniciar.
 
 ## App por IP
 

@@ -78,22 +78,22 @@ Importante:
 ### G. Levantar contenedores
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml up -d --build
 ```
 
 ### H. Ejecutar migraciones
 
 ```bash
-docker compose -f docker-compose.prod.yml exec backend python manage.py migrate
+docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate
 ```
 
 ### I. Verificar contenedores y logs
 
 ```bash
-docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs -f backend
-docker compose -f docker-compose.prod.yml logs -f frontend
-docker compose -f docker-compose.prod.yml logs -f nginx
+docker-compose -f docker-compose.prod.yml ps
+docker-compose -f docker-compose.prod.yml logs -f backend
+docker-compose -f docker-compose.prod.yml logs -f frontend
+docker-compose -f docker-compose.prod.yml logs -f nginx
 ```
 
 ### J. Probar en navegador
@@ -107,7 +107,7 @@ http://IP_DEL_VPS:8088
 - `http://IP_DEL_VPS:8088/api/health/`
 - abrir frontend
 - subir documento pequeno
-- generar embeddings
+- verificar embeddings generados
 - chat textual
 - quiz
 - voice agent, solo si el navegador permite microfono desde la IP
@@ -138,3 +138,79 @@ http://IP_DEL_VPS:8088
 - Usa su propio `docker-compose.prod.yml`
 - Usa su propio puerto `8088`
 - No requiere modificar carpetas ni compose del LIS existente
+
+## CI/CD con GitHub Actions
+
+### Secrets requeridos en GitHub
+
+Configura estos secrets en el repositorio:
+
+- `VPS_HOST`
+- `VPS_USER`
+- `VPS_SSH_KEY`
+- `PROJECT_PATH`
+
+Valor esperado:
+
+- `PROJECT_PATH=/srv/tutoria-academico`
+
+Importante:
+
+- no guardar llaves SSH en el repositorio
+- no subir `.env` ni credenciales reales
+- el deploy usa el repo ya clonado en la VPS
+
+### Flujo automatico
+
+Cuando haces `push` a `main`, GitHub Actions:
+
+1. Ejecuta la validacion de backend y frontend.
+2. Se conecta por SSH a la VPS.
+3. Entra a `$PROJECT_PATH`.
+4. Verifica que exista `.env`.
+5. Ejecuta `git fetch` y `git pull --ff-only`.
+6. Ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`.
+7. Ejecuta migraciones.
+8. Muestra `docker-compose -f docker-compose.prod.yml ps`.
+9. Ejecuta un healthcheck final.
+
+### Como verificar Actions
+
+1. Abre la pestana `Actions` en GitHub.
+2. Revisa la ejecucion de `CI`.
+3. Revisa la ejecucion de `Deploy`.
+4. Confirma que ambas terminen en estado exitoso.
+
+### Como revisar logs si falla
+
+En GitHub:
+
+- abre la corrida fallida
+- revisa el paso exacto que fallo
+
+En la VPS:
+
+```bash
+cd /srv/tutoria-academico
+docker-compose -f docker-compose.prod.yml ps
+docker-compose -f docker-compose.prod.yml logs -f backend
+docker-compose -f docker-compose.prod.yml logs -f frontend
+docker-compose -f docker-compose.prod.yml logs -f nginx
+```
+
+### Rollback manual simple
+
+Si una version falla y necesitas volver rapidamente:
+
+```bash
+cd /srv/tutoria-academico
+git log --oneline
+git checkout <commit_anterior>
+docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate
+```
+
+Luego verifica:
+
+- `docker-compose -f docker-compose.prod.yml ps`
+- `curl -f http://127.0.0.1:8088/api/health/`

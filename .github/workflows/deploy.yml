@@ -1,0 +1,48 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            set -eu
+            cd "${{ secrets.PROJECT_PATH }}"
+
+            if [ ! -f ".env" ]; then
+              echo "Error: no existe .env en ${{ secrets.PROJECT_PATH }}"
+              exit 1
+            fi
+
+            if [ ! -f "docker-compose.prod.yml" ]; then
+              echo "Error: no existe docker-compose.prod.yml en ${{ secrets.PROJECT_PATH }}"
+              exit 1
+            fi
+
+            git fetch origin main
+            git pull --ff-only origin main
+
+            docker-compose -f docker-compose.prod.yml up -d --build
+            docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate
+            docker-compose -f docker-compose.prod.yml ps
+
+            curl -f http://127.0.0.1:8088/api/health/ || curl -f https://tutoria.centromedicolosencinos.tech/api/health/

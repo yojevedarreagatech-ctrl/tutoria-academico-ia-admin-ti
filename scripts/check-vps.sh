@@ -7,7 +7,7 @@ docker --version
 
 echo ""
 echo "Docker Compose version:"
-docker compose version
+docker-compose --version
 
 echo ""
 echo "Espacio en disco:"
