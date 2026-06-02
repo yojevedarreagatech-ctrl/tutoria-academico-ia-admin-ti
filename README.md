@@ -1,314 +1,383 @@
-# tutoria-academico-ia-admin-ti
+# TutorIA Académico — Proyecto IA + Administración TI
 
-Base inicial del proyecto `tutoria-academico-ia-admin-ti`, pensado para crecer por sprints como una plataforma web de tutoria academica con componentes de IA y una ruta clara de despliegue e infraestructura.
+## Descripción general
+
+TutorIA Académico es una aplicación web de tutoría académica basada en IA. Permite cargar documentos y audios de estudio, procesarlos con una arquitectura RAG, conversar con un tutor por texto o por voz y generar quizzes de práctica a partir del contenido cargado.
+
+El proyecto combina una solución funcional de Inteligencia Artificial con una capa operativa de Administración de TI: despliegue en VPS, Docker Compose, CI/CD, documentación de infraestructura con Terraform y estrategia básica de backup y continuidad.
 
 ## Cursos que cubre
 
-1. Inteligencia Artificial
-2. Administracion de TI
+Este proyecto integra requisitos y evidencias de dos cursos:
 
-## Objetivo general
+- Inteligencia Artificial
+- Administración de Tecnologías de Información
 
-Construir una aplicacion web de tutoria academica preparada para integrar, en sprints posteriores, capacidades como LLM, RAG, embeddings, vector store, salidas estructuradas, tool calling, workflows agentic, STT y persistencia, sin adelantar esa logica en Sprint 0.
+## Problema que resuelve
 
-## Estado actual
+Muchos estudiantes tienen materiales de estudio dispersos entre PDFs, apuntes de texto, audios de clase y notas personales. Eso dificulta estudiar, repasar y practicar de forma organizada.
 
-El proyecto ya cubre la base full stack con:
+TutorIA Académico resuelve ese problema centralizando materiales y permitiendo:
 
-- backend Django REST + PostgreSQL
-- frontend Next.js
-- carga y procesamiento de documentos y audio
-- embeddings + busqueda semantica
-- chat RAG con LangGraph
-- voice agent conversacional por WebSocket
+- consultar los propios contenidos con un tutor IA
+- repasar conceptos concretos
+- practicar con quizzes
+- usar interacción textual o por voz
 
-## Stack propuesto
+## Objetivo del sistema
 
-- Frontend: Next.js + TypeScript + Tailwind CSS
-- Backend: Python + Django + Django REST Framework
-- Base de datos futura: PostgreSQL + pgvector
-- Infraestructura: Docker + Docker Compose
-- CI/CD: GitHub Actions
-- IaC: Terraform
-- Despliegue futuro: VPS Linux en `/srv/tutoria-academico` usando el puerto `8088`
+### Objetivo general
 
-## Sprint 9: Docker Compose completo
+Construir una plataforma web de tutoría académica apoyada por IA que permita estudiar sobre materiales propios mediante RAG, conversación textual o por voz y generación automática de quizzes.
 
-Este sprint deja listo:
+### Objetivos específicos
 
-- `docker-compose.yml` para desarrollo local
-- `docker-compose.prod.yml` para VPS
-- persistencia de PostgreSQL y media files
-- healthchecks para `db` y `backend`
-- Nginx interno para exponer la app en `8088` en produccion
+- cargar y procesar documentos y audios como material de estudio
+- transformar contenido en chunks y embeddings reutilizables
+- realizar recuperación semántica con PostgreSQL + pgvector
+- responder preguntas usando contexto relevante del material cargado
+- permitir una experiencia conversacional por voz con STT y TTS
+- generar quizzes estructurados para práctica
+- desplegar la solución en una VPS con procesos operativos claros
+- documentar CI/CD, IaC y backups como parte del componente de Administración TI
 
-## Sprint 11: CI/CD con GitHub Actions
+## Funcionalidades principales
 
-Este sprint agrega:
+- Carga de documentos PDF y TXT.
+- Carga de audios como material de estudio.
+- Transcripción STT con AssemblyAI.
+- Extracción de texto y chunking de contenido.
+- Generación de embeddings.
+- Búsqueda semántica con pgvector.
+- Chat tutor con RAG.
+- Workflow conversacional con LangGraph.
+- Tool calling para retrieval.
+- Voice Agent conversacional por WebSocket.
+- TTS con Cartesia para respuestas habladas.
+- Quizzes con structured output validado.
+- Historial conversacional persistido.
+- Panel Admin Técnico para validación operativa.
+- Despliegue en VPS con HTTPS.
+- CI/CD con GitHub Actions.
+- Terraform / IaC seguro y no destructivo.
+- Backups y continuidad operativa.
 
-- validacion automatica de backend y frontend en cada `push` a `main`
-- validacion en `pull_request` hacia `main`
-- despliegue automatico por SSH hacia la VPS al hacer `push` a `main`
-- rebuild no destructivo con `docker-compose -f docker-compose.prod.yml up -d --build`
-- migraciones automaticas con `docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate`
-- healthcheck posterior al despliegue
+## Arquitectura general
 
-## Sprint 12: Infrastructure as Code con Terraform
-
-Este sprint agrega:
-
-- carpeta `terraform/` con variables y outputs operativos
-- representacion segura de la VPS existente
-- documentacion de ruta, dominio, puerto, backups y estrategia de despliegue
-- ejecucion local de `terraform init`, `validate`, `plan` y `output`
-- ausencia de providers o recursos reales para no afectar produccion
-
-## Sprint 13: Backup y continuidad operativa
-
-Este sprint agrega:
-
-- backup manual de PostgreSQL con `docker-compose`
-- backup manual de `media` con compresion
-- scripts seguros de restauracion con confirmacion explicita
-- retencion simple de ultimos 7 backups
-- documentacion de continuidad operativa y recuperacion
-
-## Arquitectura inicial
+El sistema se compone de un frontend web, un backend API, una base de datos con soporte vectorial, servicios de IA externos y una capa operativa de despliegue.
 
 ```text
-Frontend (Next.js)
-  |
-  v
-Backend API (Django REST Framework)
-  |
-  v
+Usuario
+  ↓
+Frontend Next.js
+  ↓
+Backend Django REST
+  ↓
 PostgreSQL + pgvector
-
-Infra complementaria futura:
-- Nginx como reverse proxy
-- Docker Compose para entorno local y VPS
-- GitHub Actions para validaciones y despliegue
-- Terraform para documentar la infraestructura actual y preparar automatizacion futura
+  ↓
+LangGraph / RAG / Tools
+  ↓
+OpenAI / AssemblyAI / Cartesia
 ```
 
-## Estructura base
+### Componentes principales
 
-```text
-tutoria-academico-ia-admin-ti/
-  backend/
-  frontend/
-  infra/
-    nginx/
-  terraform/
-  scripts/
-  docs/
-  .github/
-    workflows/
-  docker-compose.yml
-  .env.example
-  .gitignore
-  README.md
-```
+- `frontend/`: interfaz web en Next.js.
+- `backend/`: API, lógica de negocio, chat, materiales, quizzes y voz.
+- `PostgreSQL + pgvector`: persistencia relacional y vectorial.
+- `LangGraph`: workflow conversacional del tutor.
+- `OpenAI`: embeddings, generación de respuestas y structured output.
+- `AssemblyAI`: speech-to-text.
+- `Cartesia`: text-to-speech.
+- `Docker Compose`: orquestación local y productiva.
 
-## Flujo de trabajo previsto
+## Arquitectura de IA
 
-1. Desarrollo local con `frontend`, `backend` y `db` mediante Docker Compose.
-2. Versionado y colaboracion desde Git/GitHub.
-3. Validaciones automaticas con GitHub Actions.
-4. Despliegue automatico a VPS Linux en `/srv/tutoria-academico`.
-5. Evolucion gradual hacia Terraform, observabilidad y backups.
+La capa de IA del proyecto se construye alrededor de varios conceptos clave:
 
-## Infrastructure as Code con Terraform
+### RAG
 
-La carpeta `terraform/` documenta la infraestructura actual del proyecto sin modificar la VPS real.
+El sistema usa Retrieval-Augmented Generation. Antes de responder, recupera chunks relevantes desde la base vectorial y los inyecta como contexto al modelo.
 
-Comandos basicos:
+### Embeddings
 
-```bash
-cd terraform
-terraform init
-terraform validate
-terraform plan -var-file="terraform.tfvars.example"
-terraform output
-```
+Cada chunk de contenido procesado se transforma en un vector semántico. Esto permite comparar significado, no solo texto literal.
 
-Notas:
+### Retrieval
 
-- no contiene secretos
-- no usa llaves SSH privadas
-- no crea ni destruye recursos reales
-- representa la infraestructura operativa del despliegue actual
+Cuando el usuario pregunta, el sistema genera un embedding de la consulta y busca coincidencias relevantes en `DocumentChunk`.
 
-## Backup y continuidad operativa
+### Vector store
 
-Comandos principales:
+Los embeddings se almacenan en PostgreSQL usando `pgvector`, evitando un vector store externo adicional.
 
-```bash
-bash scripts/backup.sh
-bash scripts/check-backup.sh
-bash scripts/restore_db.sh backups/db/archivo.sql
-```
+### LangGraph
 
-Notas:
+El flujo conversacional usa LangGraph para estructurar el razonamiento del tutor y coordinar nodos, estado y tools.
 
-- los backups viven fuera del repo en `backups/`
-- `.env` se respalda manualmente fuera de Git
-- no se usan comandos destructivos como `docker-compose down -v`
-- se recomienda hacer backup antes de cambios mayores
+### Tool calling
 
-## Backend Sprint 1
+El workflow usa una tool de búsqueda sobre materiales para separar la recuperación semántica de la generación final de respuesta.
 
-El backend incluye:
+### Structured output
 
-- Proyecto Django con configuracion modular en `backend/config/`
-- Apps base: `accounts`, `materials`, `chat`, `quizzes`, `ai_core`
-- API REST con Django REST Framework
-- PostgreSQL como base de datos
-- CORS basico para desarrollo local
-- Endpoint de salud en `/api/health/`
-- Endpoints REST base para materiales, conversaciones, mensajes y quizzes
+La generación de quizzes usa salida estructurada para producir JSON validable antes de persistir preguntas y opciones.
 
-## Frontend Sprint 2
+### Memoria conversacional
 
-El frontend incluye:
+El sistema conserva contexto por `conversation_id`, permitiendo seguimiento, repreguntas y práctica continua.
 
-- Next.js con App Router y TypeScript
-- Tailwind CSS para layout y componentes base
-- Dashboard conectado a `GET /api/health/`
-- Navegacion a `Dashboard`, `Materiales`, `Chat Tutor`, `Quizzes` y `Admin Tecnico`
-- Vistas placeholder listas para integracion posterior con endpoints reales
+### Protección contra prompt injection
 
-## Sprint 3: documentos
+El diseño incluye controles para reducir riesgo de respuestas fuera del material, limitar alucinaciones y evitar que contenido cargado altere el comportamiento del tutor más allá de su propósito de consulta.
 
-Este sprint agrega carga y procesamiento basico de documentos:
+## Flujo RAG
 
-- Formatos soportados: `PDF` y `TXT`
-- Upload desde la UI en `/materiales`
-- Extraccion de texto en backend
-- Division del contenido en chunks
-- Persistencia de chunks en PostgreSQL
+El flujo general del tutor académico es:
 
-## Sprint 4: embeddings y busqueda semantica
+1. El usuario carga un documento o audio.
+2. El sistema extrae texto o genera transcripción.
+3. El contenido se divide en chunks.
+4. Se generan embeddings para esos chunks.
+5. Los embeddings se almacenan en PostgreSQL + pgvector.
+6. El usuario hace una pregunta.
+7. Se realiza búsqueda semántica sobre los chunks.
+8. El backend construye un prompt con el contexto recuperado.
+9. El modelo genera la respuesta del tutor.
+10. La respuesta se entrega junto con referencias del material consultado.
 
-Este sprint agrega:
+## Flujo del Voice Agent
 
-- `pgvector` sobre PostgreSQL
-- Embeddings para `DocumentChunk`
-- Generacion de embeddings usando `OPENAI_API_KEY`
-- Busqueda semantica sobre chunks almacenados
+El flujo del modo voz es:
 
-Notas:
+1. Micrófono del navegador.
+2. WebSocket seguro sobre HTTPS/WSS.
+3. STT con AssemblyAI.
+4. Conversation Manager / LangGraph.
+5. Retrieval y RAG si aplica.
+6. Respuesta textual del tutor.
+7. TTS con Cartesia.
+8. Reproducción de audio al usuario.
 
-- Aun no se implementa chat RAG completo.
-- Si `OPENAI_API_KEY` no esta configurada, los documentos siguen procesandose, pero sin embeddings.
+Notas importantes:
 
-## Sprint 5: chat tutor con RAG
+- el navegador necesita HTTPS/WSS para una experiencia estable con micrófono
+- texto y voz comparten el mismo cerebro conversacional
+- el sistema usa control de turnos para evitar respuestas cruzadas o atrasadas
 
-Este sprint agrega:
+## Flujo de Quizzes
 
-- Chat tutor conectado a retrieval
-- Generacion de respuestas con LLM usando contexto recuperado
-- Persistencia de conversaciones y mensajes
-- Fuentes consultadas por respuesta
+El flujo de quizzes funciona así:
 
-## Sprint 6: LangGraph y workflow con tools
+1. El usuario selecciona un material procesado.
+2. El backend usa chunks del contenido como base.
+3. El LLM genera un quiz mediante structured output.
+4. El JSON se valida antes de guardarse.
+5. Se persisten `Quiz` y `QuizQuestion`.
+6. El frontend muestra la interfaz de práctica y revisión.
 
-Este sprint agrega:
+## Stack tecnológico
 
-- Workflow del chat implementado con LangGraph
-- Estado compartido para el flujo del tutor
-- `search_materials_tool` como tool principal de retrieval
-- Endpoint de diagnostico en `/api/chat/workflow-info/`
+| Tecnología | Uso principal |
+| --- | --- |
+| Next.js | Frontend web |
+| TypeScript | Tipado del frontend |
+| Tailwind CSS | Estilos y UI |
+| Django | Backend principal |
+| Django REST Framework | API REST |
+| PostgreSQL | Base de datos relacional |
+| pgvector | Almacenamiento vectorial |
+| LangChain / LangGraph | Flujo conversacional y tools |
+| OpenAI | Embeddings, chat y structured output |
+| AssemblyAI | Speech-to-text |
+| Cartesia | Text-to-speech |
+| Docker | Contenerización |
+| Docker Compose | Orquestación local y productiva |
+| Nginx | Exposición y proxy interno |
+| GitHub Actions | CI/CD |
+| Terraform | IaC documental y seguro |
 
-## Sprint 7: audio y voice agent
+## Infraestructura y despliegue
 
-Este sprint agrega:
+La solución se despliega sobre una VPS Linux existente.
 
-- Audio como material de estudio
-- STT para transcribir audio cargado
-- Reutilizacion del mismo pipeline de chunks y embeddings
-- Voice agent por WebSocket
-- TTS obligatorio para responder con voz en la demo
+Puntos clave:
 
-## Sprint 7.1: experiencia conversacional
+- ruta del proyecto: `/srv/tutoria-academico`
+- URL pública: `https://tutoria.centromedicolosencinos.tech`
+- despliegue con `docker-compose.prod.yml`
+- proyecto aislado del sistema `LIS Los Encinos`
+- no se modifica el LIS en producción
 
-Este ajuste mejora la UX del tutor:
+La infraestructura operativa actual usa:
 
-- Chat textual mas conversacional y continuo
-- Voice agent con una sola sesion activa
-- Deteccion automatica de fin de turno por silencio
-- Reanudacion automatica de escucha despues de cada respuesta
-- Historial visual de turnos en voz y texto
+- VPS Linux existente
+- `docker-compose` v1 por compatibilidad del servidor
+- Nginx externo del servidor
+- Nginx interno del proyecto para exponer frontend, API y media
 
-## Sprint 7.2: alineacion total entre chat y voz
+## CI/CD
 
-Este ajuste asegura que ambos modos compartan exactamente la misma logica conversacional:
+El flujo de CI/CD funciona con GitHub Actions.
 
-- chat textual: texto -> flujo conversacional comun -> texto
-- voice agent: audio -> STT -> flujo conversacional comun -> texto -> TTS
-- continuidad por `conversation_id` durante toda la sesion
-- respuestas limpias sin mencionar `chunk #`, `chunk_id` ni metadatos internos
+### Qué ocurre en `push` a `main`
 
-## Sprint 7.4: control estricto de turnos en voz
+- se ejecuta validación de backend
+- se ejecuta build de frontend
+- si la validación pasa, se inicia el deploy
 
-Este ajuste agrega:
+### Qué hace el deploy
 
-- `turn_id` por cada turno del usuario en voice agent
-- bloqueo de procesamiento paralelo
-- ignorar eventos atrasados en frontend
-- `practice_state` explicito para evitar desfase al practicar
+1. Se conecta por SSH al VPS usando GitHub Secrets.
+2. Entra a `PROJECT_PATH`.
+3. Hace `git fetch` y `git pull --ff-only`.
+4. Ejecuta `docker-compose -f docker-compose.prod.yml down --remove-orphans`.
+5. Ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`.
+6. Ejecuta migraciones.
+7. Muestra estado de contenedores.
+8. Ejecuta healthcheck final.
 
-## Sprint 7.5: conversation manager compartido
+### Notas operativas
 
-Este ajuste convierte el chat textual y el voice agent en dos interfaces del mismo cerebro conversacional:
+- se usa `docker-compose` v1 por compatibilidad del VPS
+- no se usa `docker compose`
+- no se borran volúmenes
+- `down --remove-orphans` recrea contenedores del proyecto sin eliminar datos persistentes
 
-- `conversation_manager` central para texto y voz
-- deteccion de intencion por reglas simples antes de responder
-- `session_state` explicito para practica, continuidad y follow-ups
-- retrieval gating con umbrales configurables para evitar alucinaciones
-- acciones concretas como resumir, simplificar, dar ejemplo, practicar o rechazar preguntas fuera del material
-- respuestas de voz realmente mas cortas y controladas por configuracion
+## Terraform / IaC
 
-## Sprint 8: mini quizzes con structured output
+Infrastructure as Code (IaC) es la práctica de representar infraestructura mediante archivos versionados.
 
-Este sprint agrega:
+En este proyecto, Terraform se usó de forma segura porque:
 
-- generacion de mini quizzes desde materiales procesados
-- structured output en JSON antes de guardar
-- validacion de preguntas, opciones, respuesta correcta y explicacion
-- persistencia en `Quiz` y `QuizQuestion`
-- UI de practica en `/quizzes`
+- la VPS ya existía
+- ya había producción en el servidor
+- coexistía el sistema `LIS Los Encinos`
 
-Variables relevantes:
+Por eso Terraform no crea ni modifica infraestructura real. En esta etapa:
 
-- `STT_PROVIDER`
+- documenta variables operativas
+- documenta outputs útiles
+- representa ruta, dominio, puerto, backup path y estrategia de despliegue
+
+### Mejora futura
+
+En una fase posterior podría ampliarse para crear:
+
+- VPS
+- DNS
+- firewall
+- componentes adicionales de operación
+
+## Persistencia
+
+La persistencia del sistema se distribuye así:
+
+- base de datos: PostgreSQL
+- documentos: volumen `media_data`
+- audios: volumen `media_data`
+- transcripciones: base de datos
+- embeddings: PostgreSQL + pgvector
+- conversaciones: base de datos
+- quizzes: base de datos
+- backups: carpeta y volumen de respaldo en VPS
+
+## Backup y continuidad
+
+El proyecto incluye una estrategia básica de continuidad operativa.
+
+### Qué se respalda
+
+- base de datos PostgreSQL
+- media: documentos y audios cargados
+
+### Qué se maneja fuera del repo
+
+- `.env`
+- cualquier credencial sensible
+
+### Scripts principales
+
+- `scripts/backup.sh`
+- `scripts/restore_db.sh`
+- `scripts/restore_media.sh`
+- `scripts/check-backup.sh`
+
+### Política de retención
+
+- se conservan los últimos 7 backups de DB
+- se conservan los últimos 7 backups de media
+
+### Estrategia de recuperación
+
+1. Restaurar el repositorio desde GitHub.
+2. Crear `.env`.
+3. Levantar Docker Compose.
+4. Restaurar base de datos.
+5. Restaurar media.
+6. Verificar healthcheck.
+
+### Recomendación importante
+
+Para un escenario real, se recomienda copiar backups fuera del VPS.
+
+## Variables de entorno
+
+Variables principales del proyecto, sin valores reales:
+
+- `DJANGO_SECRET_KEY`
+- `DJANGO_ALLOWED_HOSTS`
+- `CORS_ALLOWED_ORIGINS`
+- `CSRF_TRUSTED_ORIGINS`
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_HOST`
+- `POSTGRES_PORT`
+- `OPENAI_API_KEY`
+- `EMBEDDING_MODEL`
+- `CHAT_MODEL`
+- `RETRIEVAL_MIN_SCORE`
+- `RETRIEVAL_MAX_DISTANCE`
 - `ASSEMBLYAI_API_KEY`
 - `ASSEMBLYAI_SPEECH_MODEL`
-- `TTS_PROVIDER`
 - `CARTESIA_API_KEY`
 - `CARTESIA_LANGUAGE`
 - `CARTESIA_VOICE_ID`
 - `VOICE_AGENT_ENABLED`
-- `VOICE_AGENT_MAX_SENTENCES`
-- `VOICE_AGENT_MAX_WORDS`
-- `VOICE_AGENT_MAX_RESPONSE_SENTENCES`
-- `RETRIEVAL_MIN_SCORE`
-- `RETRIEVAL_MAX_DISTANCE`
+- `VOICE_AGENT_TTS_ENABLED`
+- `VOICE_AGENT_SILENCE_MS`
+- `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_WS_URL`
 - `NEXT_PUBLIC_VOICE_AGENT_SILENCE_MS`
+- `MEDIA_ROOT`
 
-## Comandos para desarrollo local
+Referencia base: [`.env.example`](.env.example)
+
+## Ejecución local
+
+### Con Docker Compose
 
 ```bash
 cp .env.example .env
 docker compose up --build
 docker compose exec backend python manage.py migrate
-docker compose logs -f backend
 ```
 
-## Desarrollo local sin Docker
+URLs esperadas:
 
-Backend:
+- frontend: `http://localhost:3000`
+- backend health: `http://localhost:8000/api/health/`
+
+### Frontend con npm local
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend sin Docker
 
 ```bash
 cd backend
@@ -319,231 +388,113 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Frontend:
+## Despliegue en VPS
+
+Flujo general:
 
 ```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Prueba basica esperada:
-
-```bash
-GET http://localhost:8000/api/health/
-```
-
-## Levantar frontend con npm local
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend esperado:
-
-```bash
-http://localhost:3000
-```
-
-## Levantar frontend con Docker Compose
-
-```bash
-docker compose up --build
-```
-
-URLs esperadas:
-
-```bash
-Frontend: http://localhost:3000
-Backend: http://localhost:8000/api/health/
-```
-
-## Produccion con Docker Compose
-
-```bash
-cp .env.example .env
+cd /srv/tutoria-academico
 docker-compose -f docker-compose.prod.yml up -d --build
 docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate
+curl -f http://127.0.0.1:8088/api/health/
 ```
-
-Opcional:
-
-```bash
-docker-compose -f docker-compose.prod.yml exec -T backend python manage.py createsuperuser
-```
-
-URLs esperadas:
-
-```bash
-App: http://IP_DEL_VPS:8088
-Health: http://IP_DEL_VPS:8088/api/health/
-```
-
-## Despliegue manual en VPS
-
-Resumen:
-
-- ruta del proyecto: `/srv/tutoria-academico`
-- puerto publico inicial: `8088`
-- archivo principal: `docker-compose.prod.yml`
-- script sugerido: `scripts/deploy.sh`
-- no subir `.env` al repositorio
-
-Flujo corto:
-
-```bash
-ssh usuario@IP_DEL_VPS
-cd /srv/tutoria-academico
-cp .env.example .env
-nano .env
-./scripts/deploy.sh
-```
-
-## CI/CD con GitHub Actions
-
-`push` a `main` dispara:
-
-- `CI`: valida backend y frontend
-- `Deploy`: se conecta por SSH al VPS y actualiza el despliegue productivo
-
-`pull_request` hacia `main` dispara:
-
-- `CI`: validacion de backend y frontend antes de merge
-
-Secrets requeridos en GitHub:
-
-- `VPS_HOST`
-- `VPS_USER`
-- `VPS_SSH_KEY`
-- `PROJECT_PATH`
-
-Notas del flujo:
-
-- `PROJECT_PATH` debe apuntar a `/srv/tutoria-academico`
-- el deploy usa `docker-compose`, no `docker compose`
-- el repositorio no guarda `.env`, llaves SSH ni API keys
-- Terraform documenta esos mismos valores con variables y outputs no sensibles
-- el despliegue hace `git fetch` y `git pull --ff-only`
-- luego ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`
-- despues corre migraciones y un healthcheck
-- no se usan comandos destructivos como `docker-compose down -v`
-- se recomienda backup antes de cambios mayores en produccion
-
-## Probar carga de documentos
-
-1. Levanta el proyecto con `docker compose up --build`.
-2. Ejecuta migraciones con `docker compose exec backend python manage.py migrate`.
-3. Abre `http://localhost:3000/materiales`.
-4. Sube un archivo `.txt` o `.pdf`.
-5. Verifica que el material aparezca con estado `processed` y con cantidad de chunks mayor que cero.
-
-## Probar busqueda semantica
-
-1. Verifica que `OPENAI_API_KEY` tenga un valor valido en `.env`.
-2. Levanta el proyecto y corre migraciones.
-3. Sube un material PDF o TXT.
-4. Si el material no tiene embeddings, usa el boton `Generar embeddings`.
-5. Abre `http://localhost:3000/admin-tecnico`.
-6. Ejecuta una busqueda semantica y revisa los chunks devueltos.
-
-## Healthchecks utiles
-
-```bash
-docker compose ps
-docker compose logs -f backend
-curl http://localhost:8000/api/health/
-```
-
-## Probar chat RAG
-
-1. Verifica que `OPENAI_API_KEY` tenga un valor valido en `.env`.
-2. Asegura que exista al menos un documento procesado con embeddings.
-3. Abre `http://localhost:3000/chat`.
-4. Escribe una pregunta relacionada con el contenido cargado.
-5. Revisa la respuesta del tutor y las fuentes consultadas.
-
-## Probar modo practica
-
-1. Abre `http://localhost:3000/chat`.
-2. Pide `Hazme una pregunta para practicar`.
-3. Responde la pregunta con tus propias palabras.
-4. Verifica que el tutor evalue tu respuesta antes de ofrecer otra pregunta.
-5. Pide `Otra pregunta` solo si quieres continuar practicando.
-
-## Probar workflow LangGraph
-
-1. Llama `GET http://localhost:8000/api/chat/workflow-info/`.
-2. Verifica que el workflow reportado sea `LangGraph`.
-3. Verifica que `search_materials_tool` aparezca en la lista de tools.
-4. Prueba luego `/chat` normalmente: el frontend sigue usando el mismo endpoint `/api/chat/ask/`.
-
-## Probar audio como material
-
-1. Abre `http://localhost:3000/materiales`.
-2. En `Subir audio de estudio`, carga un archivo `mp3`, `wav`, `m4a` o `webm`.
-3. Si `STT_PROVIDER=manual`, agrega tambien `transcription_text`.
-4. Verifica que se cree la transcripcion, los chunks y los embeddings si `OPENAI_API_KEY` esta configurada.
-
-## Probar voice agent
-
-1. Verifica que el navegador tenga permiso de microfono.
-2. Verifica que `ASSEMBLYAI_API_KEY` y `CARTESIA_API_KEY` tengan valores validos.
-3. Abre `http://localhost:3000/chat`.
-4. Presiona `Iniciar conversacion`.
-5. Habla con normalidad y espera una breve pausa al terminar tu turno.
-6. Revisa la transcripcion final, la respuesta textual y la reproduccion automatica de audio.
-7. Al terminar la voz del tutor, el sistema vuelve a escuchar.
 
 Notas:
 
-- El modo voz reutiliza el mismo workflow RAG del chat textual.
-- El modo voz y el chat textual usan el mismo `conversation_manager`.
-- El modo voz mantiene el mismo `conversation_id` durante la sesion WebSocket.
-- El modo practica reutiliza la misma logica conversacional en chat textual y voz.
-- Cada turno de voz usa `turn_id` para mantener el orden correcto de respuestas.
-- Si retrieval no encuentra contexto suficientemente relevante, el tutor responde: `No puedo responder eso con la informacion cargada.`
-- Primero debe existir material procesado con embeddings.
-- Si falta `OPENAI_API_KEY`, `ASSEMBLYAI_API_KEY` o `CARTESIA_API_KEY`, veras un error claro segun el componente que falte.
+- la versión productiva se sirve en `https://tutoria.centromedicolosencinos.tech`
+- no usar `docker-compose down -v`
+- antes de cambios grandes, se recomienda ejecutar backup
 
-## Probar quizzes
+## Demo sugerida para presentación
 
-1. Verifica que `OPENAI_API_KEY` tenga un valor valido.
-2. Asegura que exista un material con estado `processed` y con chunks.
-3. Abre `http://localhost:3000/quizzes`.
-4. Selecciona un material y genera un quiz de 3 o 5 preguntas.
-5. Revisa las respuestas y explicaciones.
+Secuencia sugerida para la exposición final:
 
-Structured output esperado:
+1. Abrir la app en HTTPS.
+2. Mostrar dashboard y navegación.
+3. Subir un documento.
+4. Mostrar chunks y embeddings generados.
+5. Preguntar algo al chat tutor.
+6. Probar el voice agent.
+7. Generar un quiz.
+8. Mostrar GitHub Actions.
+9. Mostrar Terraform.
+10. Mostrar backup o revisión de backups.
 
-```json
-{
-  "title": "Quiz sobre el material",
-  "questions": [
-    {
-      "question": "Texto de la pregunta",
-      "options": ["A", "B", "C", "D"],
-      "correct_answer": "A",
-      "explanation": "Explicacion breve basada en el material"
-    }
-  ]
-}
-```
+## Limitaciones actuales
 
-## Seguridad
+- La UI todavía puede mejorar en pulido visual final.
+- El voice agent depende de permisos de navegador y micrófono.
+- No hay autenticación avanzada ni roles completos.
+- No existe monitoreo enterprise.
+- Terraform no crea la VPS real por seguridad.
+- Los backups viven en la VPS y se recomienda copia externa.
 
-- No subir `.env` reales al repositorio.
-- No guardar secretos productivos, llaves privadas ni credenciales reales en Git.
-- Usar `.env.example` solo como plantilla de variables.
+## Mejoras futuras
 
-## Documentacion inicial
+- autenticación y roles
+- dashboard de métricas
+- STT streaming más avanzado
+- monitoreo con Prometheus / Grafana
+- backups externos automáticos
+- Terraform con provider real
+- migración planificada a Compose v2
+- mejor diseño visual
 
-- [Arquitectura](docs/arquitectura.md)
-- [Decisiones tecnicas](docs/decisiones-tecnicas.md)
+## Qué debe saber el equipo para exponer
+
+### Qué problema resolvemos
+
+Resolvemos la dificultad de estudiar con materiales dispersos y poco interactivos.
+
+### Qué hace la app
+
+Permite cargar contenido, procesarlo, preguntar sobre él, hablar con un tutor por voz y practicar con quizzes.
+
+### Qué parte cubre IA
+
+La parte de IA incluye:
+
+- embeddings
+- búsqueda semántica
+- RAG
+- LangGraph
+- tool calling
+- STT
+- TTS
+- structured output
+
+### Qué parte cubre Administración TI
+
+La parte de Admin TI incluye:
+
+- despliegue en VPS
+- Docker Compose
+- HTTPS
+- CI/CD con GitHub Actions
+- Terraform seguro como evidencia de IaC
+- backups y continuidad operativa
+
+### Cómo funciona RAG
+
+El sistema convierte materiales en chunks con embeddings, recupera contexto relevante ante cada pregunta y usa ese contexto para responder con mayor precisión.
+
+### Cómo funciona CI/CD
+
+GitHub Actions valida backend y frontend, se conecta por SSH al VPS y recrea contenedores con `docker-compose` sin borrar volúmenes.
+
+### Cómo funciona backup
+
+Se genera un dump SQL de PostgreSQL y un comprimido de media, ambos con retención de los últimos 7 respaldos.
+
+### Por qué Terraform se usó de forma segura
+
+Porque la VPS ya existía y tenía producción activa. Terraform se usó para documentar infraestructura y valores operativos sin arriesgar el entorno real.
+
+## Documentación complementaria
+
 - [Despliegue VPS](docs/despliegue-vps.md)
 - [CI/CD](docs/cicd.md)
 - [Terraform](docs/terraform.md)
 - [Backup y continuidad](docs/backup-continuidad.md)
-
-Desde el admin o desde la API ya queda preparada la creacion de `Material`, `Conversation`, `Message`, `Quiz` y `QuizQuestion`, mientras el frontend base permite defender el flujo completo de navegacion e integracion inicial.
+- [Arquitectura](docs/arquitectura.md)
+- [Decisiones técnicas](docs/decisiones-tecnicas.md)
