@@ -184,6 +184,23 @@ Notas importantes:
 - no se usa `down -v`
 - no se tocan contenedores fuera del proyecto
 
+## Relacion con Terraform
+
+Terraform documenta de forma no destructiva:
+
+- `project_path`
+- dominio publico
+- puerto interno
+- `backup_path`
+- archivo `docker-compose.prod.yml`
+- estrategia actual de despliegue
+
+Importante:
+
+- Terraform no despliega la app
+- Terraform no modifica la VPS real
+- el despliegue operativo sigue haciendose con Docker Compose y GitHub Actions
+
 ### Como verificar Actions
 
 1. Abre la pestana `Actions` en GitHub.

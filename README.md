@@ -29,7 +29,7 @@ El proyecto ya cubre la base full stack con:
 - Base de datos futura: PostgreSQL + pgvector
 - Infraestructura: Docker + Docker Compose
 - CI/CD: GitHub Actions
-- IaC futuro: Terraform
+- IaC: Terraform
 - Despliegue futuro: VPS Linux en `/srv/tutoria-academico` usando el puerto `8088`
 
 ## Sprint 9: Docker Compose completo
@@ -53,6 +53,16 @@ Este sprint agrega:
 - migraciones automaticas con `docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate`
 - healthcheck posterior al despliegue
 
+## Sprint 12: Infrastructure as Code con Terraform
+
+Este sprint agrega:
+
+- carpeta `terraform/` con variables y outputs operativos
+- representacion segura de la VPS existente
+- documentacion de ruta, dominio, puerto, backups y estrategia de despliegue
+- ejecucion local de `terraform init`, `validate`, `plan` y `output`
+- ausencia de providers o recursos reales para no afectar produccion
+
 ## Arquitectura inicial
 
 ```text
@@ -68,7 +78,7 @@ Infra complementaria futura:
 - Nginx como reverse proxy
 - Docker Compose para entorno local y VPS
 - GitHub Actions para validaciones y despliegue
-- Terraform para documentar y automatizar infraestructura
+- Terraform para documentar la infraestructura actual y preparar automatizacion futura
 ```
 
 ## Estructura base
@@ -97,6 +107,27 @@ tutoria-academico-ia-admin-ti/
 3. Validaciones automaticas con GitHub Actions.
 4. Despliegue automatico a VPS Linux en `/srv/tutoria-academico`.
 5. Evolucion gradual hacia Terraform, observabilidad y backups.
+
+## Infrastructure as Code con Terraform
+
+La carpeta `terraform/` documenta la infraestructura actual del proyecto sin modificar la VPS real.
+
+Comandos basicos:
+
+```bash
+cd terraform
+terraform init
+terraform validate
+terraform plan -var-file="terraform.tfvars.example"
+terraform output
+```
+
+Notas:
+
+- no contiene secretos
+- no usa llaves SSH privadas
+- no crea ni destruye recursos reales
+- representa la infraestructura operativa del despliegue actual
 
 ## Backend Sprint 1
 
@@ -366,6 +397,7 @@ Notas del flujo:
 - `PROJECT_PATH` debe apuntar a `/srv/tutoria-academico`
 - el deploy usa `docker-compose`, no `docker compose`
 - el repositorio no guarda `.env`, llaves SSH ni API keys
+- Terraform documenta esos mismos valores con variables y outputs no sensibles
 - el despliegue hace `git fetch` y `git pull --ff-only`
 - luego ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`
 - despues corre migraciones y un healthcheck
@@ -483,6 +515,7 @@ Structured output esperado:
 - [Decisiones tecnicas](docs/decisiones-tecnicas.md)
 - [Despliegue VPS](docs/despliegue-vps.md)
 - [CI/CD](docs/cicd.md)
+- [Terraform](docs/terraform.md)
 - [Backup y continuidad](docs/backup-continuidad.md)
 
 Desde el admin o desde la API ya queda preparada la creacion de `Material`, `Conversation`, `Message`, `Quiz` y `QuizQuestion`, mientras el frontend base permite defender el flujo completo de navegacion e integracion inicial.

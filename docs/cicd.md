@@ -86,6 +86,8 @@ Importante:
 - no se guarda `.env` en Git
 - la llave SSH vive solo en GitHub Secrets
 - el VPS usa `docker-compose` v1
+- GitHub Actions usa `PROJECT_PATH` y `VPS_HOST` como secrets
+- Terraform documenta esos mismos valores como variables y outputs no sensibles
 
 ## Riesgos y mitigaciones
 
