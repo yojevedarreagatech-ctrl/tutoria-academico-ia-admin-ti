@@ -220,6 +220,50 @@ La infraestructura operativa actual usa:
 
 El flujo de CI/CD funciona con GitHub Actions.
 
+### Workflows del repositorio
+
+El repositorio tiene dos workflows separados en `.github/workflows/`:
+
+- `ci.yml`: valida backend y frontend
+- `deploy.yml`: publica la versiÃ³n aprobada en la VPS
+
+Esta separaciÃ³n ayuda a explicar el proceso al ingeniero: primero se verifica que el cÃ³digo estÃ© sano y luego se ejecuta el cambio operativo sobre el servidor.
+
+### CÃ³mo funciona `ci.yml`
+
+`ci.yml` se ejecuta en:
+
+- `push` a `main`
+- `pull_request` hacia `main`
+
+El workflow divide la validaciÃ³n en dos jobs paralelos:
+
+1. `backend`
+2. `frontend`
+
+#### Job `backend`
+
+Entra a `backend/` y ejecuta:
+
+- `actions/checkout@v4`
+- `actions/setup-python@v5` con Python 3.12
+- instalaciÃ³n de dependencias desde `requirements.txt`
+- `python -m compileall apps config manage.py`
+- `python manage.py check`
+
+Para este job se definen variables de entorno mÃ­nimas de CI, de forma que Django pueda arrancar y validar configuraciÃ³n sin usar credenciales reales del entorno productivo.
+
+#### Job `frontend`
+
+Entra a `frontend/` y ejecuta:
+
+- `actions/checkout@v4`
+- `actions/setup-node@v4` con Node 20
+- `npm ci`
+- `npm run build`
+
+Con esto se comprueba que la aplicaciÃ³n Next.js compile correctamente antes de permitir un despliegue.
+
 ### Qué ocurre en `push` a `main`
 
 - se ejecuta validación de backend
@@ -228,14 +272,41 @@ El flujo de CI/CD funciona con GitHub Actions.
 
 ### Qué hace el deploy
 
+`deploy.yml` solo escucha `push` a `main`, porque su responsabilidad ya no es revisar cÃ³digo sino actualizar producciÃ³n.
+
+AdemÃ¡s, usa:
+
+- `concurrency.group: deploy-production`
+- `cancel-in-progress: false`
+
+Eso evita que dos despliegues se pisen entre sÃ­.
+
+Paso a paso, el workflow hace lo siguiente:
+
 1. Se conecta por SSH al VPS usando GitHub Secrets.
 2. Entra a `PROJECT_PATH`.
-3. Hace `git fetch` y `git pull --ff-only`.
-4. Ejecuta `docker-compose -f docker-compose.prod.yml down --remove-orphans`.
-5. Ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`.
-6. Ejecuta migraciones.
-7. Muestra estado de contenedores.
-8. Ejecuta healthcheck final.
+3. Verifica que existan `.env` y `docker-compose.prod.yml`.
+4. Ejecuta `git fetch origin main`.
+5. Ejecuta `git pull --ff-only origin main`.
+6. Ejecuta `docker-compose -f docker-compose.prod.yml down --remove-orphans`.
+7. Ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`.
+8. Ejecuta `docker-compose -f docker-compose.prod.yml exec -T backend python manage.py migrate`.
+9. Ejecuta `docker-compose -f docker-compose.prod.yml ps`.
+10. Ejecuta `curl -f http://127.0.0.1:8088/api/health/`.
+11. Si el healthcheck interno falla, intenta `curl -f https://tutoria.centromedicolosencinos.tech/api/health/`.
+
+Esto deja documentado que el deploy no copia archivos manualmente: entra al repositorio ya clonado en la VPS y actualiza la versiÃ³n usando Git.
+
+### Secrets usados por el deploy
+
+Los secrets que el workflow necesita son:
+
+- `VPS_HOST`
+- `VPS_USER`
+- `VPS_SSH_KEY`
+- `PROJECT_PATH`
+
+`VPS_SSH_KEY` contiene la llave privada con la que GitHub Actions entra al servidor. Esa llave no vive en el repositorio ni dentro del `.env`.
 
 ### Notas operativas
 
@@ -404,6 +475,112 @@ Notas:
 - la versión productiva se sirve en `https://tutoria.centromedicolosencinos.tech`
 - no usar `docker-compose down -v`
 - antes de cambios grandes, se recomienda ejecutar backup
+
+### Cómo se preparó la configuración en la VPS
+
+La configuración del servidor se preparó manualmente y de forma controlada porque la VPS ya existía y compartía infraestructura con otro sistema en producción: `LIS Los Encinos`.
+
+### Objetivo de la preparación
+
+El objetivo no era reconstruir la VPS desde cero, sino dejar un entorno aislado para `TutorIA Académico` con estas condiciones:
+
+- despliegue independiente
+- no afectar al otro sistema del servidor
+- permitir actualización automática por GitHub Actions
+- conservar datos persistentes entre despliegues
+
+### Preparación base del servidor
+
+En la VPS se validó previamente que existieran:
+
+- acceso por SSH
+- `git`
+- Docker
+- `docker-compose` v1
+
+Se mantuvo `docker-compose` v1 porque era la versión compatible con el entorno real del servidor.
+
+### Aislamiento del proyecto
+
+Para no mezclar esta app con el resto del servidor, se preparó una ruta exclusiva:
+
+- `/srv/tutoria-academico`
+
+Dentro de esa carpeta se dejó:
+
+- el repositorio clonado
+- la rama `main` como fuente de despliegue
+- el archivo `.env` creado manualmente
+- el archivo `docker-compose.prod.yml`
+
+Eso permite que el workflow entre siempre al mismo directorio y ejecute el despliegue sin depender de transferencias manuales de archivos.
+
+### Configuración sensible y variables
+
+La configuración sensible no se versionó en Git. Se preparó directamente en la VPS mediante `.env`, incluyendo por ejemplo:
+
+- `DJANGO_SECRET_KEY`
+- credenciales de PostgreSQL
+- `DJANGO_ALLOWED_HOSTS`
+- `CORS_ALLOWED_ORIGINS`
+- `CSRF_TRUSTED_ORIGINS`
+- `OPENAI_API_KEY`
+- `ASSEMBLYAI_API_KEY`
+- `CARTESIA_API_KEY`
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_WS_URL`
+
+Por separado, en GitHub se registraron los Secrets del deploy para el acceso remoto por SSH.
+
+### Configuración de contenedores
+
+La publicación productiva se apoya en `docker-compose.prod.yml`, donde se organizan cuatro servicios:
+
+- `db`
+- `backend`
+- `frontend`
+- `nginx`
+
+La separación es importante porque permite:
+
+- persistir la base de datos aparte
+- reconstruir frontend y backend sin perder información
+- centralizar el acceso web a través de Nginx
+
+### Configuración de publicación
+
+El entorno fue preparado para responder por:
+
+- dominio público: `https://tutoria.centromedicolosencinos.tech`
+- healthcheck interno: `http://127.0.0.1:8088/api/health/`
+
+Ese doble punto de validación sirve para distinguir si el problema está:
+
+- dentro del stack de contenedores
+- en la publicación externa o el proxy
+
+### Preparación para GitHub Actions
+
+Para que el deploy automático funcione, se dejó listo:
+
+- usuario con acceso SSH a la VPS
+- llave pública autorizada en el servidor
+- llave privada guardada en `VPS_SSH_KEY`
+- `PROJECT_PATH` apuntando a `/srv/tutoria-academico`
+
+Con eso, GitHub Actions no hace SCP ni reempaqueta el proyecto. Solo entra al servidor, actualiza con `git pull --ff-only` y recrea contenedores.
+
+### Verificación operativa posterior
+
+Una vez preparada la VPS, la comprobación inicial del entorno consistió en:
+
+1. levantar servicios con `docker-compose -f docker-compose.prod.yml up -d --build`
+2. correr migraciones
+3. revisar `docker-compose -f docker-compose.prod.yml ps`
+4. validar `api/health/`
+5. comprobar acceso por dominio
+
+Ese mismo criterio luego quedó reflejado en el workflow `deploy.yml`, por lo que la automatización replica el procedimiento operativo manual que primero se probó en el servidor.
 
 ## Demo sugerida para presentación
 
