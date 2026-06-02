@@ -32,6 +32,18 @@ export function MaterialsManager() {
   const [embeddingMaterialId, setEmbeddingMaterialId] = useState<number | null>(null);
   const [deletingMaterialId, setDeletingMaterialId] = useState<number | null>(null);
 
+  async function ensureEmbeddings(material: Material) {
+    if (material.status !== "processed" || material.chunks_count === 0 || material.embeddings_count > 0) {
+      return material;
+    }
+
+    try {
+      return await generateMaterialEmbeddings(material.id);
+    } catch {
+      return material;
+    }
+  }
+
   async function loadMaterials() {
     setLoading(true);
     try {
@@ -61,7 +73,8 @@ export function MaterialsManager() {
     setError(null);
 
     try {
-      await uploadMaterial(title, file);
+      const uploadedMaterial = await uploadMaterial(title, file);
+      await ensureEmbeddings(uploadedMaterial);
       setTitle("");
       setFile(null);
       const input = document.getElementById("material-file") as HTMLInputElement | null;
@@ -122,7 +135,8 @@ export function MaterialsManager() {
     setError(null);
 
     try {
-      await uploadAudioMaterial(audioTitle, audioFile, manualTranscription);
+      const response = await uploadAudioMaterial(audioTitle, audioFile, manualTranscription);
+      await ensureEmbeddings(response.material);
       setAudioTitle("");
       setAudioFile(null);
       setManualTranscription("");
@@ -142,12 +156,12 @@ export function MaterialsManager() {
     <div className="space-y-8">
       <SectionCard
         title="Materiales"
-        description="Carga documentos PDF o TXT para extraer texto y generar chunks listos para siguientes sprints."
+        description="Sube contenido y preparalo para consulta, voz y quizzes."
       >
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <form
             onSubmit={handleSubmit}
-            className="space-y-4 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-6"
+            className="space-y-4 rounded-[1.75rem] border border-black/5 bg-white/90 p-6"
           >
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700" htmlFor="title">
@@ -159,7 +173,7 @@ export function MaterialsManager() {
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Ej. Guia de estudio de bases de datos"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black"
               />
             </div>
 
@@ -172,12 +186,12 @@ export function MaterialsManager() {
                 type="file"
                 accept=".pdf,.txt"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
+                className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-slate-500"
               />
             </div>
 
-            <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
-              En este sprint solo se realiza extraccion y chunking. Aun no hay embeddings ni RAG.
+            <div className="rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-600">
+              Soporta PDF, TXT y flujo posterior de embeddings.
             </div>
 
             {error ? <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
@@ -185,26 +199,27 @@ export function MaterialsManager() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-full bg-brand-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Procesando..." : "Subir material"}
             </button>
           </form>
 
-          <div className="rounded-[1.5rem] bg-slate-900 p-6 text-slate-50">
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-300">Flujo actual</p>
-            <h3 className="mt-3 text-2xl font-semibold">Upload, extraccion y chunking</h3>
-            <p className="mt-4 text-sm leading-7 text-slate-300">
-              Cada documento se guarda en media, se lee de forma sincronica y se divide en chunks persistidos en la
-              base de datos para sprints futuros.
-            </p>
+          <div className="rounded-[1.75rem] bg-black p-6 text-white">
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Pipeline</p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-tight">Contenido listo para IA</h3>
+            <div className="mt-5 grid gap-3 text-sm text-slate-200">
+              <div className="rounded-2xl bg-white/10 px-4 py-3">Carga y extraccion</div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3">Chunking persistido</div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3">Embeddings bajo demanda</div>
+            </div>
           </div>
         </div>
       </SectionCard>
 
       <SectionCard
-        title="Subir audio de estudio"
-        description="Carga audio como material de estudio para generar transcripcion, chunks y embeddings."
+        title="Audio"
+        description="Sube una clase o nota de voz y conviertela en material consultable."
       >
         <form onSubmit={handleAudioSubmit} className="grid gap-4 lg:grid-cols-2">
           <input
@@ -212,25 +227,25 @@ export function MaterialsManager() {
             value={audioTitle}
             onChange={(event) => setAudioTitle(event.target.value)}
             placeholder="Titulo opcional del audio"
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal"
+            className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black"
           />
           <input
             id="audio-file"
             type="file"
             accept=".mp3,.wav,.m4a,.webm,.ogg"
             onChange={(event) => setAudioFile(event.target.files?.[0] ?? null)}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500"
+            className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm text-slate-500"
           />
           <textarea
             value={manualTranscription}
             onChange={(event) => setManualTranscription(event.target.value)}
-            placeholder="Transcripcion manual opcional para STT_PROVIDER=manual"
-            className="min-h-28 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal lg:col-span-2"
+            placeholder="Transcripcion manual opcional"
+            className="min-h-28 rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black lg:col-span-2"
           />
           <button
             type="submit"
             disabled={submitting}
-            className="w-fit rounded-full bg-brand-gold px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:opacity-60"
+            className="w-fit rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
           >
             {submitting ? "Procesando audio..." : "Subir audio"}
           </button>
@@ -242,10 +257,10 @@ export function MaterialsManager() {
           <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">Cargando materiales...</div>
         ) : materials.length === 0 ? (
           <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            Aun no hay materiales cargados.
+            No hay materiales todavia.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[1.5rem] border border-slate-200">
+          <div className="overflow-hidden rounded-[1.5rem] border border-black/5 bg-white">
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead className="bg-slate-50">
                 <tr>
@@ -264,7 +279,7 @@ export function MaterialsManager() {
                     <td className="px-4 py-3 text-slate-700">
                       <div className="font-medium">{material.title}</div>
                       {material.status === "processed" ? (
-                        <div className="mt-1 text-xs text-emerald-700">Listo para futuros sprints de embeddings y RAG.</div>
+                          <div className="mt-1 text-xs text-emerald-700">Listo para consulta y practica.</div>
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-slate-500">{material.file_type.toUpperCase()}</td>
@@ -277,20 +292,28 @@ export function MaterialsManager() {
                       {new Date(material.created_at).toLocaleString("es-GT")}
                     </td>
                     <td className="px-4 py-3 text-slate-700">{material.chunks_count}</td>
-                    <td className="px-4 py-3 text-slate-700">{material.embeddings_count ?? 0}</td>
+                    <td className="px-4 py-3 text-slate-700">
+                      {material.embeddings_count > 0 ? material.embeddings_count : "Pendiente"}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
-                        {material.status === "processed" ? (
+                        {material.status === "processed" && material.embeddings_count === 0 ? (
                           <button
                             type="button"
                             onClick={() => void handleGenerateEmbeddings(material.id)}
                             disabled={embeddingMaterialId === material.id}
-                            className="rounded-full border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-teal hover:text-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
+                            className="rounded-full border border-black/10 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            {embeddingMaterialId === material.id ? "Generando..." : "Generar embeddings"}
+                            {embeddingMaterialId === material.id ? "Generando..." : "Reintentar embeddings"}
                           </button>
+                        ) : null}
+
+                        {material.embeddings_count > 0 ? (
+                          <span className="self-center text-xs text-emerald-700">Embeddings listos</span>
                         ) : (
-                          <span className="self-center text-xs text-slate-400">Disponible cuando este processed</span>
+                          <span className="self-center text-xs text-slate-400">
+                            {material.status === "processed" ? "Auto" : "Disponible al procesar"}
+                          </span>
                         )}
 
                         <button

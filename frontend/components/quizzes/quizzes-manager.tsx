@@ -105,15 +105,12 @@ export function QuizzesManager() {
     <div className="space-y-8">
       <SectionCard
         title="Quizzes"
-        description="Genera mini quizzes de estudio con structured output validado antes de guardar."
+        description="Practica sobre contenido real con generacion automatica."
       >
         <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-gold">Generacion real</p>
-            <h3 className="mt-3 text-2xl font-semibold text-brand-ink">Crear quiz desde material procesado</h3>
-            <p className="mt-3 text-sm leading-7 text-slate-600">
-              El backend usa salida estructurada para generar preguntas, opciones, respuesta correcta y explicacion.
-            </p>
+          <div className="rounded-[1.75rem] border border-black/5 bg-white p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Generate</p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-tight text-brand-ink">Crear quiz</h3>
 
             <div className="mt-5 space-y-4">
               <label className="block text-sm text-slate-700">
@@ -121,7 +118,7 @@ export function QuizzesManager() {
                 <select
                   value={selectedMaterialId}
                   onChange={(event) => setSelectedMaterialId(event.target.value ? Number(event.target.value) : "")}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-gold"
+                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none focus:border-black"
                 >
                   <option value="">Selecciona un material</option>
                   {processedMaterials.map((material) => (
@@ -137,7 +134,7 @@ export function QuizzesManager() {
                 <select
                   value={numQuestions}
                   onChange={(event) => setNumQuestions(Number(event.target.value))}
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-brand-gold"
+                  className="mt-2 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none focus:border-black"
                 >
                   <option value={3}>3 preguntas</option>
                   <option value={5}>5 preguntas</option>
@@ -149,18 +146,14 @@ export function QuizzesManager() {
               type="button"
               onClick={() => void handleGenerateQuiz()}
               disabled={generating || !selectedMaterialId}
-              className="mt-5 rounded-full bg-brand-gold px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {generating ? "Generando..." : "Generar quiz"}
             </button>
           </div>
 
-          <div className="rounded-[1.5rem] bg-slate-900 p-6 text-slate-50">
-            <p className="text-sm uppercase tracking-[0.18em] text-slate-300">Structured output</p>
-            <p className="mt-3 text-sm leading-7 text-slate-300">
-              El modelo devuelve JSON valido, luego el backend verifica que cada pregunta tenga 4 opciones y que
-              la respuesta correcta coincida con una de ellas antes de guardar el quiz.
-            </p>
+          <div className="rounded-[1.75rem] bg-black p-6 text-white">
+            <p className="text-sm uppercase tracking-[0.18em] text-slate-400">Ready to practice</p>
             <div className="mt-5 rounded-2xl bg-white/10 px-4 py-4 text-sm text-slate-200">
               {processedMaterials.length > 0
                 ? `${processedMaterials.length} materiales procesados disponibles para generar quizzes.`
@@ -172,10 +165,10 @@ export function QuizzesManager() {
 
       {error ? <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
 
-      <SectionCard title="Quiz activo" description="Selecciona respuestas y revisa explicaciones basadas en el material.">
+      <SectionCard title="Quiz activo" description="Selecciona respuestas y revisa explicaciones.">
         {activeQuiz ? (
           <div className="space-y-6">
-            <div className="rounded-[1.5rem] border border-slate-200 bg-white p-6">
+            <div className="rounded-[1.5rem] border border-black/5 bg-white p-6">
               <h3 className="text-2xl font-semibold text-brand-ink">{activeQuiz.title}</h3>
               {activeQuiz.description ? (
                 <p className="mt-2 text-sm leading-7 text-slate-600">{activeQuiz.description}</p>
@@ -186,8 +179,8 @@ export function QuizzesManager() {
             </div>
 
             {activeQuiz.questions.map((question, index) => (
-              <div key={question.id} className="rounded-[1.5rem] border border-slate-200 bg-white p-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-gold">
+              <div key={question.id} className="rounded-[1.5rem] border border-black/5 bg-white p-6">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Pregunta {index + 1}
                 </p>
                 <h4 className="mt-3 text-lg font-semibold text-brand-ink">{question.question}</h4>
@@ -200,8 +193,8 @@ export function QuizzesManager() {
                         key={option}
                         className={`cursor-pointer rounded-2xl border px-4 py-3 text-sm transition ${
                           selected
-                            ? "border-brand-gold bg-amber-50 text-brand-ink"
-                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-brand-gold"
+                            ? "border-black bg-slate-100 text-brand-ink"
+                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-black"
                         }`}
                       >
                         <input
@@ -229,7 +222,7 @@ export function QuizzesManager() {
                 <button
                   type="button"
                   onClick={() => void handleCheckAnswer(activeQuiz.id, question.id)}
-                  className="mt-5 rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-gold hover:text-brand-gold"
+                  className="mt-5 rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
                 >
                   Revisar respuesta
                 </button>
@@ -254,7 +247,7 @@ export function QuizzesManager() {
           </div>
         ) : (
           <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white px-5 py-6 text-sm text-slate-600">
-            Genera un quiz o abre uno existente para practicar.
+            Genera o abre un quiz para empezar.
           </div>
         )}
       </SectionCard>
@@ -272,7 +265,7 @@ export function QuizzesManager() {
                   setActiveQuiz(quiz);
                   setReviewState({});
                 }}
-                className="rounded-[1.5rem] border border-slate-200 bg-white p-5 text-left transition hover:border-brand-gold"
+                className="rounded-[1.5rem] border border-black/5 bg-white p-5 text-left transition hover:border-black"
               >
                 <h3 className="text-lg font-semibold text-brand-ink">{quiz.title}</h3>
                 <p className="mt-2 text-sm text-slate-600">{quiz.material_title || "Sin material asociado"}</p>
@@ -284,7 +277,7 @@ export function QuizzesManager() {
           </div>
         ) : (
           <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white px-5 py-6 text-sm text-slate-600">
-            Aun no hay quizzes generados.
+            No hay quizzes generados todavia.
           </div>
         )}
       </SectionCard>

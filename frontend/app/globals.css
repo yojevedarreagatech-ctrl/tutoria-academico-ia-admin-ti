@@ -4,16 +4,30 @@
 
 :root {
   color-scheme: light;
+  --bg: #f3f5f7;
+  --panel: rgba(255, 255, 255, 0.78);
+  --panel-strong: rgba(255, 255, 255, 0.94);
+  --border: rgba(15, 23, 42, 0.08);
+  --text: #111827;
+  --muted: #5b6472;
+  --accent: #111111;
+  --accent-soft: #f3f4f6;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(14, 116, 144, 0.18), transparent 24%),
-    radial-gradient(circle at 90% 0%, rgba(217, 119, 6, 0.16), transparent 20%),
-    linear-gradient(180deg, #f8f4ee 0%, #ecf3f7 100%);
-  color: #102033;
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.95), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(203, 213, 225, 0.36), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(226, 232, 240, 0.48), transparent 30%),
+    linear-gradient(180deg, #eef2f5 0%, #f7f8fa 46%, #eef1f4 100%);
+  color: var(--text);
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
 a {
@@ -30,4 +44,12 @@ textarea,
 select,
 button {
   font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(17, 24, 39, 0.12);
 }

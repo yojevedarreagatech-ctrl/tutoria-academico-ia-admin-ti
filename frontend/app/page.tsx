@@ -3,53 +3,63 @@ import { HealthStatus } from "@/components/ui/health-status";
 
 const dashboardCards = [
   {
-    title: "Materiales de estudio",
-    description: "Base para cargar documentos, audios y futuros procesos de extraccion de contenido.",
+    title: "Materiales",
+    value: "PDF, TXT, audio",
   },
   {
-    title: "Chat tutor con RAG",
-    description: "La interfaz ya queda preparada, mientras la logica de recuperacion llegara en sprints posteriores.",
+    title: "Chat",
+    value: "RAG",
   },
   {
-    title: "Quizzes de practica",
-    description: "Habra generacion guiada y trazabilidad academica, sin implementar IA real todavia.",
+    title: "Quizzes",
+    value: "Practica",
   },
   {
-    title: "Despliegue administrado en VPS",
-    description: "El proyecto se orienta a Docker Compose, backups, CI/CD y Terraform como parte del curso de TI.",
+    title: "Admin",
+    value: "Health",
   },
 ];
 
 export default function HomePage() {
   return (
     <div className="space-y-8">
-      <section className="rounded-[2rem] border border-white/70 bg-hero p-8 shadow-panel">
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-teal">
-            Sprint 2
-          </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-brand-ink">
-            TutorIA Academico
-          </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-700">
-            Interfaz base para un sistema de tutoria academica que integrara IA y buenas practicas de
-            administracion de TI sin adelantar funcionalidades complejas antes de tiempo.
-          </p>
+      <section className="overflow-hidden rounded-[2rem] border border-white/70 bg-hero p-8 shadow-panel md:p-10">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+          <div className="max-w-3xl">
+            <h2 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-brand-ink md:text-5xl">
+              TutorIA
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+              Materiales, chat, quizzes y admin.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-[1.5rem] border border-black/5 bg-white/85 p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Secciones</p>
+              <p className="mt-2 text-2xl font-semibold text-brand-ink">5</p>
+            </div>
+            <div className="rounded-[1.5rem] border border-black/5 bg-white/85 p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Chat</p>
+              <p className="mt-2 text-2xl font-semibold text-brand-ink">Activo</p>
+            </div>
+            <div className="rounded-[1.5rem] border border-black/5 bg-white/85 p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Backend</p>
+              <p className="mt-2 text-2xl font-semibold text-brand-ink">Online</p>
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {dashboardCards.map((card) => (
           <SectionCard key={card.title} title={card.title}>
-            <p className="text-sm leading-6 text-slate-600">{card.description}</p>
+            <p className="text-2xl font-semibold tracking-tight text-brand-ink">{card.value}</p>
           </SectionCard>
         ))}
       </section>
 
-      <SectionCard
-        title="Estado del backend"
-        description="Consulta en tiempo real al endpoint GET /api/health/ para validar conectividad entre frontend y backend."
-      >
+      <SectionCard title="Estado">
         <HealthStatus />
       </SectionCard>
     </div>

@@ -16,17 +16,18 @@ export default function AdminTecnicoPage() {
   return (
     <div className="space-y-8">
       <SectionCard
-        title="Admin Tecnico"
-        description="Vista inicial pensada para el curso de Administracion de TI, con foco en despliegue, observabilidad basica y servicios esperados."
+        title="Admin"
+        description="Vista operativa del backend y el stack."
       >
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[1.5rem] bg-slate-900 p-6 text-slate-50">
-            <p className="text-sm uppercase tracking-[0.18em] text-slate-300">Despliegue previsto</p>
-            <h3 className="mt-3 text-2xl font-semibold">VPS Linux con Docker Compose</h3>
-            <p className="mt-4 text-sm leading-7 text-slate-300">
-              El despliegue objetivo se mantendra sobre VPS, con automatizaciones graduales para CI/CD, backups e
-              infraestructura como codigo.
-            </p>
+          <div className="rounded-[1.75rem] bg-black p-6 text-white">
+            <p className="text-sm uppercase tracking-[0.18em] text-slate-400">Operations</p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-tight">Observabilidad para demo</h3>
+            <div className="mt-5 grid gap-3 text-sm text-slate-200">
+              <div className="rounded-2xl bg-white/10 px-4 py-3">Backend health</div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3">Busqueda semantica</div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3">Servicios esperados</div>
+            </div>
           </div>
 
           <HealthStatus mode="technical" />
@@ -36,9 +37,9 @@ export default function AdminTecnicoPage() {
       <SectionCard title="Servicios esperados">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {expectedServices.map((service) => (
-            <div key={service} className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+            <div key={service} className="rounded-[1.5rem] border border-black/5 bg-white p-5">
               <p className="text-lg font-semibold text-brand-ink">{service}</p>
-              <p className="mt-2 text-sm text-slate-600">Componente previsto dentro de la arquitectura general.</p>
+              <p className="mt-2 text-sm text-slate-500">Componente previsto del sistema.</p>
             </div>
           ))}
         </div>

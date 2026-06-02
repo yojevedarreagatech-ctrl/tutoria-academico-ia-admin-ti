@@ -74,37 +74,34 @@ export function ChatPanel() {
   return (
     <div className="space-y-8">
       <SectionCard
-        title="Chat Tutor"
-        description="Pregunta sobre tus materiales procesados. El tutor responde usando retrieval sobre chunks con embeddings."
+        title="Tutor chat"
+        description="Consulta tus materiales con contexto y seguimiento."
       >
         <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[1.5rem] bg-slate-900 p-6 text-slate-50">
-            <p className="text-sm uppercase tracking-[0.2em] text-slate-300">Modo actual</p>
-            <h3 className="mt-3 text-2xl font-semibold">Chat RAG conversacional</h3>
-            <p className="mt-4 text-sm leading-7 text-slate-300">
-              Conserva el contexto de la conversacion para preguntas de seguimiento. Primero debes tener
-              materiales procesados con embeddings.
-            </p>
-            <div className="mt-4 space-y-3">
-              <div className="rounded-xl bg-white/10 px-4 py-3 text-sm text-slate-200">
-                Conversacion activa: {conversationId ? `#${conversationId}` : "nueva"}
+          <div className="rounded-[1.75rem] bg-black p-6 text-white">
+            <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Session</p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-tight">Conversacion lista para demo</h3>
+            <div className="mt-6 grid gap-3">
+              <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm text-slate-200">
+                Conversacion: {conversationId ? `#${conversationId}` : "Nueva"}
               </div>
-              <div className="rounded-xl bg-white/10 px-4 py-3 text-sm text-slate-200">
-                Funciona bien para preguntas como "explicalo mas facil", "dame un ejemplo" o "resume lo mas
-                importante".
+              <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm text-slate-200">
+                Ideal para seguimiento, resumenes y explicaciones paso a paso.
+              </div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3 text-sm text-slate-200">
+                Usa materiales con embeddings para mejores respuestas.
               </div>
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
+          <div className="rounded-[1.75rem] border border-black/5 bg-white/90 p-4">
             <div
               ref={messagesRef}
-              className="max-h-[30rem] space-y-4 overflow-y-auto rounded-[1.25rem] bg-slate-50 p-4"
+              className="max-h-[30rem] space-y-4 overflow-y-auto rounded-[1.4rem] bg-slate-50/80 p-4"
             >
               {messages.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600">
-                  Aun no hay mensajes. Haz una pregunta sobre un material ya procesado y continua con preguntas
-                  de seguimiento en la misma conversacion.
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm text-slate-500">
+                  Pregunta algo sobre tus materiales para iniciar.
                 </div>
               ) : (
                 messages.map((message) => (
@@ -112,16 +109,16 @@ export function ChatPanel() {
                     <div
                       className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-6 ${
                         message.role === "user"
-                          ? "ml-auto bg-brand-ink text-white"
-                          : "bg-white text-slate-700"
+                          ? "ml-auto bg-black text-white"
+                          : "border border-black/5 bg-white text-slate-700"
                       }`}
                     >
                       {message.content}
                     </div>
 
                     {message.role === "assistant" && message.sources && message.sources.length > 0 ? (
-                      <div className="max-w-[90%] rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-600">
-                        <p className="font-semibold text-brand-ink">Fuentes consultadas</p>
+                      <div className="max-w-[90%] rounded-2xl border border-black/5 bg-white px-4 py-4 text-sm text-slate-600">
+                        <p className="font-semibold text-brand-ink">Sources</p>
                         <div className="mt-3 space-y-3">
                           {message.sources.map((source) => (
                             <div key={source.chunk_id} className="rounded-xl bg-slate-50 p-3">
@@ -139,23 +136,21 @@ export function ChatPanel() {
               )}
 
               {loading ? (
-                <div className="max-w-[90%] rounded-2xl bg-white px-4 py-3 text-sm text-slate-600">
-                  El tutor esta preparando una respuesta con base en los materiales cargados...
+                <div className="max-w-[90%] rounded-2xl border border-black/5 bg-white px-4 py-3 text-sm text-slate-600">
+                  Pensando...
                 </div>
               ) : null}
             </div>
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-slate-500">
-                Si quieres cambiar de tema por completo, reinicia la conversacion.
-              </p>
+              <p className="text-sm text-slate-500">Cambia de tema reiniciando la sesion.</p>
               <button
                 type="button"
                 onClick={resetConversation}
                 disabled={messages.length === 0 && !conversationId}
-                className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-teal hover:text-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Nueva conversacion
+                Nueva sesion
               </button>
             </div>
 
@@ -165,16 +160,16 @@ export function ChatPanel() {
               <textarea
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
-                placeholder="Escribe una pregunta academica o una repregunta de seguimiento..."
+                placeholder="Escribe tu pregunta..."
                 rows={2}
-                className="flex-1 rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal"
+                className="flex-1 rounded-[1.5rem] border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black"
               />
               <button
                 type="submit"
                 disabled={loading || !question.trim()}
-                className="rounded-full bg-brand-teal px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? "Enviando..." : "Enviar"}
+                {loading ? "Enviando..." : "Preguntar"}
               </button>
             </form>
           </div>

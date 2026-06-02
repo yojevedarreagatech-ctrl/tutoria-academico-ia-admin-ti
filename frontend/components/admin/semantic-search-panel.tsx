@@ -43,21 +43,21 @@ export function SemanticSearchPanel() {
 
   return (
     <SectionCard
-      title="Prueba de busqueda semantica"
-      description="Consulta chunks similares usando embeddings guardados en PostgreSQL + pgvector."
+      title="Semantic search"
+      description="Explora resultados recuperados por embeddings."
     >
       <form onSubmit={handleSearch} className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr_auto]">
         <input
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Ej. fundamentos de redes y arquitectura"
-          className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal"
+          placeholder="Buscar conceptos o temas"
+          className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black"
         />
         <select
           value={materialId}
           onChange={(event) => setMaterialId(event.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-teal"
+          className="rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none transition focus:border-black"
         >
           <option value="">Todos los materiales</option>
           {materials.map((material) => (
@@ -69,7 +69,7 @@ export function SemanticSearchPanel() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-full bg-brand-teal px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Buscando..." : "Buscar"}
         </button>
@@ -80,11 +80,11 @@ export function SemanticSearchPanel() {
       <div className="mt-6 space-y-4">
         {results.length === 0 ? (
           <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            Aun no hay resultados. Si la API key no esta configurada o faltan embeddings, la busqueda no devolvera chunks.
+            Aun no hay resultados.
           </div>
         ) : (
           results.map((result) => (
-            <article key={result.chunk_id} className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+            <article key={result.chunk_id} className="rounded-[1.5rem] border border-black/5 bg-white p-5">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-brand-ink">{result.material_title}</h3>

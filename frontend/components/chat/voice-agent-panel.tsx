@@ -591,8 +591,8 @@ export function VoiceAgentPanel() {
 
   return (
     <SectionCard
-      title="Voice Agent"
-      description="Sesion conversacional por WebSocket con orden de turnos explicito, RAG y respuesta hablada."
+      title="Voice mode"
+      description="Conversacion por voz con turnos y respuesta hablada."
     >
       <div className="space-y-5">
         <div className="flex flex-wrap gap-3">
@@ -600,55 +600,52 @@ export function VoiceAgentPanel() {
             type="button"
             onClick={() => void startConversation()}
             disabled={sessionActive}
-            className="rounded-full bg-brand-teal px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {sessionActive ? "Conversacion iniciada" : "Iniciar conversacion"}
+            {sessionActive ? "Sesion activa" : "Iniciar voz"}
           </button>
           <button
             type="button"
             onClick={stopConversation}
             disabled={!sessionActive}
-            className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-300 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Finalizar conversacion
+            Finalizar
           </button>
           <button
             type="button"
             onClick={toggleMicPause}
             disabled={!sessionActive}
-            className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-brand-teal hover:text-brand-teal disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {micPaused ? "Reanudar microfono" : "Pausar microfono"}
           </button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
             <span className="font-semibold text-brand-ink">Conexion:</span> {connectionStatus}
           </div>
-          <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
             <span className="font-semibold text-brand-ink">Estado:</span> {getReadableStatus()}
           </div>
-          <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
             <span className="font-semibold text-brand-ink">Conversacion:</span>{" "}
             {conversationId ? `#${conversationId}` : "sin iniciar"}
           </div>
-          <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="rounded-xl border border-black/5 bg-white p-4 text-sm text-slate-700">
             <span className="font-semibold text-brand-ink">Practice:</span> {practiceState}
           </div>
         </div>
 
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-xs text-slate-500">
           Debug: conversation_id={conversationId ?? "null"} | current_turn_id={currentTurnId ?? "null"} | status={phase} | practice_state={practiceState} | intent={lastIntent ?? "null"} | action={lastAction ?? "null"}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[1.25rem] bg-slate-900 p-5 text-slate-50">
-            <p className="text-xs uppercase tracking-[0.22em] text-slate-300">Modo conversacional</p>
-            <h3 className="mt-3 text-xl font-semibold">Turnos ordenados por sesion</h3>
-            <p className="mt-4 text-sm leading-7 text-slate-300">
-              Cada turno tiene `turn_id`, el backend procesa uno a la vez y el frontend ignora eventos atrasados.
-            </p>
+          <div className="rounded-[1.5rem] bg-black p-5 text-white">
+            <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Live audio</p>
+            <h3 className="mt-3 text-xl font-semibold">Interaccion fluida por turnos</h3>
             <div className="mt-5 space-y-3 text-sm text-slate-200">
               <div className="rounded-xl bg-white/10 px-4 py-3">
                 <span className="font-semibold">Estado actual:</span> {getReadableStatus()}
@@ -659,23 +656,22 @@ export function VoiceAgentPanel() {
             </div>
           </div>
 
-          <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
+          <div className="rounded-[1.5rem] border border-black/5 bg-white p-4">
             <div
               ref={historyRef}
-              className="max-h-[28rem] space-y-4 overflow-y-auto rounded-[1rem] bg-slate-50 p-4"
+              className="max-h-[28rem] space-y-4 overflow-y-auto rounded-[1.2rem] bg-slate-50/80 p-4"
             >
               {turns.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm text-slate-600">
-                  Inicia una conversacion y habla con normalidad. El sistema mantendra el orden de turnos y
-                  evitara procesar respuestas atrasadas.
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm text-slate-500">
+                  Inicia una sesion y habla con naturalidad.
                 </div>
               ) : (
                 turns.map((turn) => (
                   <div key={turn.id} className="space-y-3">
-                    <div className="ml-auto max-w-[88%] rounded-2xl bg-brand-ink px-4 py-3 text-sm leading-6 text-white">
+                    <div className="ml-auto max-w-[88%] rounded-2xl bg-black px-4 py-3 text-sm leading-6 text-white">
                       {turn.userText}
                     </div>
-                    <div className="max-w-[92%] rounded-2xl bg-white px-4 py-4 text-sm text-slate-700 shadow-sm">
+                    <div className="max-w-[92%] rounded-2xl border border-black/5 bg-white px-4 py-4 text-sm text-slate-700 shadow-sm">
                       {turn.assistantText ? (
                         <p className="leading-7">{turn.assistantText}</p>
                       ) : (
@@ -687,8 +683,8 @@ export function VoiceAgentPanel() {
                       )}
 
                       {turn.sources.length > 0 ? (
-                        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                          <p className="font-semibold text-brand-ink">Fuentes consultadas</p>
+                        <div className="mt-4 rounded-xl border border-black/5 bg-slate-50 px-4 py-3">
+                          <p className="font-semibold text-brand-ink">Sources</p>
                           <div className="mt-3 space-y-3">
                             {turn.sources.map((source) => (
                               <div key={`${turn.id}-${source.chunk_id}`} className="rounded-lg bg-white p-3">
@@ -705,7 +701,7 @@ export function VoiceAgentPanel() {
               )}
 
               {partialTranscript ? (
-                <div className="rounded-2xl border border-dashed border-brand-teal/40 bg-white px-4 py-3 text-sm text-slate-600">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600">
                   <span className="font-semibold text-brand-ink">Captura actual:</span> {partialTranscript}
                 </div>
               ) : null}

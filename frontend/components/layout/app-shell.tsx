@@ -1,12 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 const navItems = [
-  { href: "/", label: "Dashboard" },
+  { href: "/", label: "Inicio" },
   { href: "/materiales", label: "Materiales" },
-  { href: "/chat", label: "Chat Tutor" },
+  { href: "/chat", label: "Chat" },
   { href: "/quizzes", label: "Quizzes" },
-  { href: "/admin-tecnico", label: "Admin Tecnico" },
+  { href: "/admin-tecnico", label: "Admin" },
 ];
 
 type AppShellProps = {
@@ -14,37 +17,48 @@ type AppShellProps = {
 };
 
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-200/70 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 py-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-teal">
-              TutorIA Academico
-            </p>
-            <h1 className="mt-2 font-serif text-3xl font-semibold text-brand-ink">
-              Plataforma base para tutoria academica e infraestructura TI
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              Frontend inicial de Sprint 2 conectado al backend Django REST.
-            </p>
+    <div className="min-h-screen px-4 pb-8 pt-4 md:px-6">
+      <div className="mx-auto max-w-7xl">
+        <header className="rounded-[2rem] border border-white/60 bg-white/75 px-5 py-5 shadow-panel backdrop-blur-xl md:px-7">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-3 rounded-full border border-black/5 bg-black px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-white">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                TutorIA
+              </div>
+              <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-brand-ink md:text-4xl">
+                Plataforma academica.
+              </h1>
+            </div>
+
+            <div className="flex items-center lg:justify-end">
+              <nav className="flex flex-wrap gap-2 rounded-full border border-black/5 bg-white/90 p-1">
+                {navItems.map((item) => {
+                  const active = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                        active
+                          ? "bg-black text-white shadow-sm"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
           </div>
+        </header>
+      </div>
 
-          <nav className="flex flex-wrap gap-3">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-brand-teal hover:text-brand-teal"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
+      <main className="mx-auto max-w-7xl px-1 py-8 md:px-0">{children}</main>
     </div>
   );
 }

@@ -9,19 +9,19 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          ink: "#102033",
-          teal: "#0e7490",
-          sand: "#f4efe7",
-          gold: "#d97706",
-          mist: "#e6edf4",
+          ink: "#111827",
+          teal: "#111111",
+          sand: "#f8fafc",
+          gold: "#374151",
+          mist: "#e5e7eb",
         },
       },
       boxShadow: {
-        panel: "0 24px 80px rgba(16, 32, 51, 0.12)",
+        panel: "0 24px 80px rgba(15, 23, 42, 0.08)",
       },
       backgroundImage: {
         hero:
-          "radial-gradient(circle at top left, rgba(14, 116, 144, 0.22), transparent 32%), radial-gradient(circle at 80% 10%, rgba(217, 119, 6, 0.18), transparent 28%), linear-gradient(180deg, #f7f2ea 0%, #edf4f8 100%)",
+          "radial-gradient(circle at top left, rgba(255, 255, 255, 0.96), transparent 28%), radial-gradient(circle at 92% 2%, rgba(226, 232, 240, 0.7), transparent 28%), linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(244,247,250,0.96) 100%)",
       },
     },
   },
