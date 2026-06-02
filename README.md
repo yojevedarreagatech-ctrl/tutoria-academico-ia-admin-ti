@@ -63,6 +63,16 @@ Este sprint agrega:
 - ejecucion local de `terraform init`, `validate`, `plan` y `output`
 - ausencia de providers o recursos reales para no afectar produccion
 
+## Sprint 13: Backup y continuidad operativa
+
+Este sprint agrega:
+
+- backup manual de PostgreSQL con `docker-compose`
+- backup manual de `media` con compresion
+- scripts seguros de restauracion con confirmacion explicita
+- retencion simple de ultimos 7 backups
+- documentacion de continuidad operativa y recuperacion
+
 ## Arquitectura inicial
 
 ```text
@@ -128,6 +138,23 @@ Notas:
 - no usa llaves SSH privadas
 - no crea ni destruye recursos reales
 - representa la infraestructura operativa del despliegue actual
+
+## Backup y continuidad operativa
+
+Comandos principales:
+
+```bash
+bash scripts/backup.sh
+bash scripts/check-backup.sh
+bash scripts/restore_db.sh backups/db/archivo.sql
+```
+
+Notas:
+
+- los backups viven fuera del repo en `backups/`
+- `.env` se respalda manualmente fuera de Git
+- no se usan comandos destructivos como `docker-compose down -v`
+- se recomienda hacer backup antes de cambios mayores
 
 ## Backend Sprint 1
 
@@ -402,6 +429,7 @@ Notas del flujo:
 - luego ejecuta `docker-compose -f docker-compose.prod.yml up -d --build`
 - despues corre migraciones y un healthcheck
 - no se usan comandos destructivos como `docker-compose down -v`
+- se recomienda backup antes de cambios mayores en produccion
 
 ## Probar carga de documentos
 

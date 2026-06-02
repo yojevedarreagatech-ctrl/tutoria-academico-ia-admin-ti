@@ -208,6 +208,21 @@ Importante:
 3. Revisa la ejecucion de `Deploy`.
 4. Confirma que ambas terminen en estado exitoso.
 
+### Backup recomendado despues del despliegue
+
+Despues de un despliegue exitoso, ejecuta un backup de prueba:
+
+```bash
+cd /srv/tutoria-academico
+bash scripts/backup.sh
+```
+
+Recomendaciones:
+
+- verificar backups antes de cambios grandes
+- no usar `docker-compose down -v`
+- revisar `bash scripts/check-backup.sh`
+
 ### Como revisar logs si falla
 
 En GitHub:

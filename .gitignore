@@ -48,6 +48,7 @@ backups/
 *.dump
 *.sql
 *.bak
+*.tar.gz
 
 # Terraform local state
 terraform/.terraform/

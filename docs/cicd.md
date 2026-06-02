@@ -99,6 +99,7 @@ Mitigacion:
 - `docker-compose down --remove-orphans` solo recrea contenedores del proyecto
 - no se borran volumenes
 - no se usa `docker volume rm`
+- el pipeline no borra datos persistentes
 
 ### Riesgo: despliegue sobre configuracion incompleta
 
@@ -112,6 +113,13 @@ Mitigacion:
 
 - el deploy usa `docker-compose`, que es el comando ya utilizado en la VPS
 - no se cambia a `docker compose`
+
+### Recomendacion operativa
+
+Antes de cambios mayores:
+
+- ejecutar `bash scripts/backup.sh`
+- confirmar que `bash scripts/check-backup.sh` muestre respaldos recientes
 
 ### Riesgo: falla posterior al deploy
 
