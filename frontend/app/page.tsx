@@ -30,7 +30,7 @@ export default function HomePage() {
       <section className="overflow-hidden rounded-[2.25rem] border border-brand-mist bg-hero p-8 shadow-panel md:p-10">
         <PageHeader
           eyebrow="TutorIA Académico"
-          title="Estudia mejor con un tutor de IA basado en tus materiales"
+          title="Estudia mejor con un tutor de IA basado en tus materiales xdxd"
           description="Sube documentos o audios, conversa con un tutor académico, practica con quizzes y repasa por voz."
         />
 
